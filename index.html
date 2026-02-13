@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Baron | AI Lab Sandbox</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: -apple-system, sans-serif; background: #0b0e14; color: white; display: flex; flex-direction: column; height: 100vh; margin: 0; }
+        #chat { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .msg { padding: 10px 15px; border-radius: 15px; max-width: 80%; line-height: 1.4; }
+        .user { background: #0047FF; align-self: flex-end; }
+        .ai { background: #1a1c24; align-self: flex-start; border: 1px solid #30363d; }
+        #input-area { padding: 20px; background: #161b22; display: flex; gap: 10px; }
+        input { flex: 1; padding: 12px; border-radius: 8px; border: none; background: #0b0e14; color: white; }
+        button { padding: 10px 20px; border-radius: 8px; border: none; background: #0047FF; color: white; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div id="chat">
+        <div class="msg ai">🦁 Welcome to the Lab. Send a message to test the Receptionist Brain.</div>
+    </div>
+    <div id="input-area">
+        <input type="text" id="userInput" placeholder="Type a message (e.g. My pipe burst!)">
+        <button onclick="send()">SEND</button>
+    </div>
+
+    <script>
+        async function send() {
+            const input = document.getElementById('userInput');
+            const chat = document.getElementById('chat');
+            const text = input.value;
+            if (!text) return;
+
+            // Add user message to UI
+            chat.innerHTML += `<div class="msg user">${text}</div>`;
+            input.value = '';
+
+            try {
+                // Call the Brain API on Port 8080 (Tailscale Proxy)
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: 'robert_local', text: text })
+                });
+                const data = await response.json();
+                chat.innerHTML += `<div class="msg ai">${data.reply}</div>`;
+            } catch (e) {
+                chat.innerHTML += `<div class="msg ai" style="color:red">Error: Could not reach Brain API.</div>`;
+            }
+            chat.scrollTop = chat.scrollHeight;
+        }
+    </script>
+</body>
+</html>
