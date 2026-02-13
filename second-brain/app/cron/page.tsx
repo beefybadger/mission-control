@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Clock, Zap, RefreshCw, Activity, ShieldAlert } from 'lucide-react';
+import { Clock, RefreshCw, Play, Pause } from 'lucide-react';
+import type { CronJob } from '@/types';
 
-export default function CronManager() {
-  const [jobs, setJobs] = useState<any[]>([]);
+export default function CronPage() {
+  const [jobs, setJobs] = useState<CronJob[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -14,77 +15,68 @@ export default function CronManager() {
   async function fetchJobs() {
     setLoading(true);
     try {
-      const response = await fetch('/api/cron');
-      const data = await response.json();
-      setJobs(Array.isArray(data) ? data : (data.jobs || []));
-    } catch (error) {
-      console.error('Failed to fetch jobs:', error);
+      const res = await fetch('/api/cron');
+      const data = await res.json();
+      setJobs(Array.isArray(data) ? data : data.jobs ?? []);
+    } catch (e) {
+      console.error('Failed to fetch cron jobs:', e);
     }
     setLoading(false);
   }
 
   return (
-    <div className="max-w-6xl mx-auto">
-      <header className="mb-12 flex justify-between items-end">
+    <div className="p-8 max-w-5xl mx-auto">
+      <header className="flex items-center justify-between mb-12">
         <div>
-          <h2 className="text-4xl font-black tracking-tighter text-white italic">Cron Monitor</h2>
-          <p className="text-slate-400 text-lg mt-2">View the current state of automated system loops.</p>
+          <h2 className="text-4xl font-black tracking-tighter text-white mb-4 italic underline decoration-blue-500/30 text-shadow">Cron Operations</h2>
+          <p className="text-slate-400 text-lg font-medium leading-relaxed max-w-2xl">
+            Scheduled tasks and automated job management.
+          </p>
         </div>
-        <button 
+        <button
           onClick={fetchJobs}
-          className="bg-white/5 hover:bg-white/10 text-slate-300 px-6 py-3 rounded-2xl font-bold text-sm flex items-center gap-2 transition-all border border-white/5"
+          className="flex items-center gap-2 bg-white/5 hover:bg-blue-600 text-white text-[11px] font-bold uppercase tracking-widest px-4 py-3 rounded-xl transition-all"
         >
-          <RefreshCw size={16} className={loading ? 'animate-spin' : ''} /> Refresh State
+          <RefreshCw className="w-3.5 h-3.5" /> Refresh
         </button>
       </header>
 
-      <div className="grid grid-cols-1 gap-4">
-        {loading ? (
-          <div className="py-20 text-center animate-pulse text-[10px] font-bold text-slate-600 uppercase tracking-[0.3em]">Querying Scheduler...</div>
-        ) : jobs.length === 0 ? (
-          <div className="py-20 text-center bg-[#090909] border border-dashed border-white/5 rounded-3xl">
-            <ShieldAlert size={32} className="text-slate-700 mx-auto mb-4" />
-            <p className="text-slate-500 font-medium">No active cron jobs found in the system.</p>
-          </div>
-        ) : (
-          jobs.map((job) => {
-            const jobId = job.jobId || job.id;
-            return (
-              <div key={jobId} className={`bg-[#090909] border border-white/5 rounded-3xl p-8 hover:border-white/10 transition-all group ${!job.enabled ? 'opacity-60' : ''}`}>
-                <div className="flex justify-between items-start">
-                  <div className="flex gap-6">
-                    <div className={`w-14 h-14 bg-white/[0.03] border border-white/5 rounded-2xl flex items-center justify-center ${job.enabled ? 'text-blue-500' : 'text-slate-600'}`}>
-                      <Clock size={24} />
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-bold text-white mb-1">{job.name || 'Unnamed Job'}</h3>
-                      <div className="flex items-center gap-4 text-xs font-medium text-slate-500">
-                        <span className="flex items-center gap-1.5"><Zap size={12} className="text-amber-500" /> {job.schedule?.expr || job.schedule?.kind || 'N/A'}</span>
-                        <span className="flex items-center gap-1.5"><Activity size={12} /> Target: {job.sessionTarget}</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <span className={`text-[10px] font-bold uppercase tracking-widest px-4 py-1.5 rounded-full border ${
-                      job.enabled ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'
-                    }`}>
-                      {job.enabled ? 'Enabled' : 'Disabled'}
-                    </span>
-                  </div>
+      {loading ? (
+        <div className="flex items-center justify-center py-20">
+          <div className="animate-pulse text-slate-600 text-sm">Loading cron jobs...</div>
+        </div>
+      ) : jobs.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-24 bg-white/[0.01] border border-dashed border-white/5 rounded-2xl text-slate-600">
+          <Clock className="w-12 h-12 mb-4 opacity-20" />
+          <p className="text-sm font-medium">No cron jobs configured.</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {jobs.map((job, i) => (
+            <div key={job.jobId || job.id || i} className="bg-[#090909] border border-white/5 rounded-2xl p-6 hover:border-white/10 transition-all flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${job.enabled ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-slate-500/10 border border-white/5'}`}>
+                  {job.enabled ? <Play className="w-4 h-4 text-emerald-500" /> : <Pause className="w-4 h-4 text-slate-500" />}
                 </div>
-                
-                <div className="mt-8 pt-6 border-t border-white/5 flex justify-between items-center">
-                  <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">
-                    Next Sync: <span className="text-slate-400">{job.state?.nextRunAtMs ? new Date(job.state.nextRunAtMs).toLocaleString() : 'N/A'}</span>
+                <div>
+                  <h3 className="text-sm font-bold text-white mb-1">{job.name || job.jobId || `Job ${i + 1}`}</h3>
+                  <p className="text-[11px] text-slate-500 font-medium">
+                    {job.schedule?.expr || 'No schedule'} · {job.sessionTarget || 'default'}
                   </p>
-                  <span className="text-[10px] font-bold text-slate-700 uppercase tracking-widest italic select-none">Read Only Mode</span>
                 </div>
               </div>
-            );
-          })
-        )}
-      </div>
+              <div className="flex items-center gap-3">
+                <span className={`text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border ${job.enabled
+                    ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                    : 'bg-slate-500/10 text-slate-500 border-white/5'
+                  }`}>
+                  {job.enabled ? 'Active' : 'Disabled'}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

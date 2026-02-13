@@ -3,8 +3,8 @@
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
 import { Command } from 'cmdk'
-import { 
-  LayoutDashboard, ListTodo, Brain, Users, 
+import {
+  LayoutDashboard, ListTodo, Brain, Users,
   Calendar, Settings, Search, Plus, Zap
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -50,7 +50,7 @@ export function CommandMenu() {
 
         <Command.List className="max-h-[360px] overflow-y-auto p-2 scrollbar-hide">
           <Command.Empty className="py-8 text-center text-sm text-slate-500">No results found.</Command.Empty>
-          
+
           <Command.Group heading="Navigation" className="px-2 py-1 text-[11px] font-bold text-slate-600 uppercase tracking-widest">
             <Item icon={<LayoutDashboard />} label="Dashboard" onSelect={() => runCommand(() => router.push('/'))} />
             <Item icon={<ListTodo />} label="Tasks" onSelect={() => runCommand(() => router.push('/tasks'))} />
@@ -67,8 +67,8 @@ export function CommandMenu() {
           <Command.Separator className="h-[1px] bg-white/5 my-2" />
 
           <Command.Group heading="Actions" className="px-2 py-1 text-[11px] font-bold text-slate-600 uppercase tracking-widest">
-            <Item icon={<Plus />} label="Create New Task" shortcut="N" onSelect={() => {}} />
-            <Item icon={<Zap />} label="Quick Memory Log" shortcut="L" onSelect={() => {}} />
+            <Item icon={<Plus />} label="Create New Task" shortcut="N" onSelect={() => { }} />
+            <Item icon={<Zap />} label="Quick Memory Log" shortcut="L" onSelect={() => { }} />
             <Item icon={<Settings />} label="Open Settings" onSelect={() => runCommand(() => router.push('/settings'))} />
           </Command.Group>
         </Command.List>
@@ -91,8 +91,8 @@ function Item({ icon, label, shortcut, onSelect }: { icon: React.ReactNode, labe
       onSelect={onSelect}
       className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer aria-selected:bg-white/[0.05] aria-selected:text-white text-slate-400 transition-colors group"
     >
-      <span className="text-slate-500 group-aria-selected:text-blue-400 group-aria-selected:drop-shadow-[0_0_8px_rgba(59,130,246,0.3)]">
-        {React.cloneElement(icon as React.ReactElement, { size: 16 })}
+      <span className="text-slate-500 group-aria-selected:text-blue-400 group-aria-selected:drop-shadow-[0_0_8px_rgba(59,130,246,0.3)] [&>svg]:w-4 [&>svg]:h-4">
+        {icon}
       </span>
       <span className="text-[13px] font-medium flex-1">{label}</span>
       {shortcut && (

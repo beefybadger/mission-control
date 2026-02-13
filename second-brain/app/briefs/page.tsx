@@ -1,16 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
-import { Calendar, Newspaper, Lightbulb, CheckSquare, Zap } from 'lucide-react';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { supabase } from '@/lib/supabase';
+import { Calendar, Search, BookOpen } from 'lucide-react';
+import type { Memory } from '@/types';
 
 export default function BriefsPage() {
-  const [briefs, setBriefs] = useState<any[]>([]);
+  const [briefs, setBriefs] = useState<Memory[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -18,65 +14,49 @@ export default function BriefsPage() {
   }, []);
 
   async function fetchBriefs() {
-    // For now, we fetch the daily memory logs as 'briefs'
     const { data, error } = await supabase
       .from('memories')
       .select('*')
+      .ilike('file_path', '%brief%')
       .order('created_at', { ascending: false });
 
-    if (!error) setBriefs(data);
+    if (!error && data) setBriefs(data as Memory[]);
     setLoading(false);
   }
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="p-8 max-w-5xl mx-auto">
       <header className="mb-12">
-        <h2 className="text-4xl font-black tracking-tighter text-white mb-4 italic">Morning Briefs</h2>
-        <p className="text-slate-400 text-lg">Your historical archive of daily intelligence and business ideas.</p>
+        <h2 className="text-4xl font-black tracking-tighter text-white mb-4 italic underline decoration-blue-500/30 text-shadow">Daily Briefs</h2>
+        <p className="text-slate-400 text-lg font-medium leading-relaxed max-w-2xl">
+          Aggregated intelligence and status updates from Baron&apos;s daily operations.
+        </p>
       </header>
 
       {loading ? (
-        <div className="text-center py-20 text-slate-500 animate-pulse font-medium tracking-widest uppercase text-xs">Syncing Intelligence...</div>
+        <div className="flex items-center justify-center py-20">
+          <div className="animate-pulse text-slate-600 text-sm">Loading briefs...</div>
+        </div>
+      ) : briefs.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-24 bg-white/[0.01] border border-dashed border-white/5 rounded-2xl text-slate-600">
+          <BookOpen className="w-12 h-12 mb-4 opacity-20" />
+          <p className="text-sm font-medium">No briefs available yet.</p>
+        </div>
       ) : (
-        <div className="space-y-8">
-          {briefs.length === 0 ? (
-            <div className="py-20 text-center border border-dashed border-white/10 rounded-3xl">
-              <p className="text-slate-600 font-medium italic">Your first brief is scheduled for tomorrow at 08:30 GMT+1.</p>
-            </div>
-          ) : (
-            briefs.map((brief) => (
-              <div key={brief.id} className="bg-[#151515] border border-white/5 rounded-3xl overflow-hidden hover:border-blue-500/20 transition-all">
-                <div className="p-8 border-b border-white/5 flex justify-between items-center bg-black/20">
-                  <div className="flex items-center gap-3">
-                    <Calendar className="w-5 h-5 text-blue-500" />
-                    <h3 className="font-bold text-white uppercase tracking-widest text-sm">
-                      {new Date(brief.updated_at).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-                    </h3>
-                  </div>
-                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Delivered via Telegram</span>
-                </div>
-                
-                <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8 text-sm">
-                   <div className="space-y-4">
-                      <div className="flex items-center gap-2 text-blue-400 font-bold uppercase tracking-tighter text-xs">
-                        <Newspaper className="w-4 h-4" /> Market Intelligence
-                      </div>
-                      <div className="text-slate-400 leading-relaxed italic">
-                        Logs archived from {brief.file_path}. Click vault for full content.
-                      </div>
-                   </div>
-                   <div className="space-y-4 text-slate-400">
-                      <div className="flex items-center gap-2 text-purple-400 font-bold uppercase tracking-tighter text-xs">
-                        <Lightbulb className="w-4 h-4" /> Strategic Decisions
-                      </div>
-                      <p className="line-clamp-3 leading-relaxed">
-                        {brief.content.substring(0, 300)}...
-                      </p>
-                   </div>
-                </div>
+        <div className="space-y-6">
+          {briefs.map((brief) => (
+            <div key={brief.id} className="bg-[#090909] border border-white/5 rounded-2xl p-6 hover:border-white/10 transition-all">
+              <div className="flex items-center gap-3 mb-4">
+                <Calendar className="w-4 h-4 text-blue-500" />
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                  {new Date(brief.created_at).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+                </span>
               </div>
-            ))
-          )}
+              <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap font-medium">
+                {brief.content}
+              </p>
+            </div>
+          ))}
         </div>
       )}
     </div>

@@ -1,18 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
-import { Plus, CheckCircle2, Circle, Search, Filter, MoreHorizontal, ArrowUpCircle } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
+import { Plus, CheckCircle2, Circle, Inbox, MoreHorizontal } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import type { Task } from '@/types';
 
 export default function TaskForce() {
-  const [tasks, setTasks] = useState<any[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [newTask, setNewTask] = useState('');
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -27,7 +23,7 @@ export default function TaskForce() {
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (!error) setTasks(data);
+    if (!error && data) setTasks(data as Task[]);
     setLoading(false);
   }
 
@@ -37,11 +33,11 @@ export default function TaskForce() {
 
     const { data, error } = await supabase
       .from('tasks')
-      .insert([{ title: newTask, status: 'pending', priority: 'medium' }])
+      .insert([{ title: newTask, status: 'pending' as const, priority: 'medium' as const }])
       .select();
 
     if (!error && data) {
-      setTasks([data[0], ...tasks]);
+      setTasks([data[0] as Task, ...tasks]);
       setNewTask('');
     }
   }
@@ -75,7 +71,7 @@ export default function TaskForce() {
           <h1 className="text-3xl font-bold tracking-tight text-white">Task Force</h1>
           <p className="text-[13px] text-slate-500 font-medium">Directives and execution tracking for the current mission.</p>
         </div>
-        
+
         <div className="flex items-center gap-2 bg-white/[0.03] p-1 rounded-lg border border-white/5">
           <FilterButton active={filter === 'all'} label="All" onClick={() => setFilter('all')} count={tasks.length} />
           <FilterButton active={filter === 'active'} label="Active" onClick={() => setFilter('active')} count={tasks.filter(t => t.status === 'pending').length} />
@@ -89,17 +85,17 @@ export default function TaskForce() {
           <div className="pl-5 text-slate-500 group-focus-within:text-blue-500 transition-colors">
             <Plus size={20} />
           </div>
-          <input 
-            type="text" 
+          <input
+            type="text"
             placeholder="Add objective to backlog..."
             className="flex-1 bg-transparent border-none py-5 px-4 text-[15px] text-white focus:outline-none placeholder:text-slate-600"
             value={newTask}
             onChange={(e) => setNewTask(e.target.value)}
           />
           <div className="pr-4">
-             <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-white/[0.05] border border-white/5 text-[10px] font-bold text-slate-500">
-                RETURN
-             </div>
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-white/[0.05] border border-white/5 text-[10px] font-bold text-slate-500">
+              RETURN
+            </div>
           </div>
         </div>
       </form>
@@ -113,26 +109,26 @@ export default function TaskForce() {
           </div>
         ) : filteredTasks.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 bg-white/[0.01] border border-dashed border-white/5 rounded-2xl text-slate-600">
-            <Layout className="w-12 h-12 mb-4 opacity-20" />
+            <Inbox className="w-12 h-12 mb-4 opacity-20" />
             <p className="text-sm font-medium">No missions matching current criteria.</p>
           </div>
         ) : (
           <AnimatePresence mode="popLayout">
             {filteredTasks.map((task) => (
-              <motion.div 
+              <motion.div
                 layout
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.98 }}
-                key={task.id} 
+                key={task.id}
                 className={cn(
                   "group flex items-center gap-4 p-4 rounded-xl border transition-all duration-200",
-                  task.status === 'completed' 
-                    ? 'bg-transparent border-transparent opacity-40 hover:opacity-60' 
+                  task.status === 'completed'
+                    ? 'bg-transparent border-transparent opacity-40 hover:opacity-60'
                     : 'bg-[#0c0c0c] border-white/5 hover:border-white/10 hover:bg-[#111]'
                 )}
               >
-                <button 
+                <button
                   onClick={() => toggleTask(task.id, task.status)}
                   className="relative flex items-center justify-center"
                 >
@@ -144,7 +140,7 @@ export default function TaskForce() {
                     <Circle className="w-6 h-6 text-slate-700 group-hover:text-blue-500 transition-colors" />
                   )}
                 </button>
-                
+
                 <div className="flex-1 flex flex-col gap-0.5">
                   <span className={cn(
                     "text-[14px] font-medium transition-all",
@@ -158,15 +154,15 @@ export default function TaskForce() {
                 </div>
 
                 <div className="flex items-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                   <div className={cn(
-                     "px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider",
-                     task.priority === 'high' ? "bg-red-500/10 text-red-500 border border-red-500/20" : "bg-slate-800 text-slate-500"
-                   )}>
-                     {task.priority}
-                   </div>
-                   <button className="text-slate-700 hover:text-white transition-colors">
-                     <MoreHorizontal size={16} />
-                   </button>
+                  <div className={cn(
+                    "px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider",
+                    task.priority === 'high' ? "bg-red-500/10 text-red-500 border border-red-500/20" : "bg-slate-800 text-slate-500"
+                  )}>
+                    {task.priority}
+                  </div>
+                  <button className="text-slate-700 hover:text-white transition-colors">
+                    <MoreHorizontal size={16} />
+                  </button>
                 </div>
               </motion.div>
             ))}
@@ -179,12 +175,12 @@ export default function TaskForce() {
 
 function FilterButton({ active, label, onClick, count }: { active: boolean, label: string, onClick: () => void, count: number }) {
   return (
-    <button 
+    <button
       onClick={onClick}
       className={cn(
         "flex items-center gap-2 px-3 py-1.5 rounded-md text-[11px] font-bold transition-all",
-        active 
-          ? "bg-white/[0.05] text-white shadow-sm" 
+        active
+          ? "bg-white/[0.05] text-white shadow-sm"
           : "text-slate-500 hover:text-slate-300"
       )}
     >

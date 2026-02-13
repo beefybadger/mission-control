@@ -4,14 +4,27 @@ import { promisify } from 'util';
 
 const execAsync = promisify(exec);
 
-export async function GET() {
+function isAuthorized(request: Request): boolean {
+  const apiKey = process.env.DASHBOARD_API_KEY;
+  if (!apiKey) return true; // No key configured = open access (dev mode)
+  const authHeader = request.headers.get('authorization');
+  return authHeader === `Bearer ${apiKey}`;
+}
+
+export async function GET(request: Request) {
+  if (!isAuthorized(request)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
-    // Standardizing on the correct CLI syntax: 'openclaw cron list' (without --includeDisabled)
     const { stdout } = await execAsync('openclaw cron list --json');
-    const jobs = JSON.parse(stdout);
-    return NextResponse.json(jobs);
-  } catch (error: any) {
-    console.error('Cron GET error:', error.message);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const data = JSON.parse(stdout);
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error('Cron API error:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch cron jobs', jobs: [] },
+      { status: 500 }
+    );
   }
 }

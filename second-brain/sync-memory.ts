@@ -1,14 +1,13 @@
 import { supabaseAdmin } from './lib/supabaseAdmin'
 import fs from 'fs'
 import path from 'path'
-import { tools } from 'openclaw'
 
 async function syncMemoriesWithEmbeddings() {
   const memoryDir = path.join(process.cwd(), '../memory')
   if (!fs.existsSync(memoryDir)) return
 
   const files = fs.readdirSync(memoryDir).filter(f => f.endsWith('.md'))
-  
+
   for (const file of files) {
     const content = fs.readFileSync(path.join(memoryDir, file), 'utf8')
     const filePath = `memory/${file}`
@@ -19,11 +18,11 @@ async function syncMemoriesWithEmbeddings() {
 
     const { error } = await supabaseAdmin
       .from('memories')
-      .upsert({ 
-        file_path: filePath, 
+      .upsert({
+        file_path: filePath,
         content: content,
         embedding: embedding,
-        updated_at: new Date() 
+        updated_at: new Date()
       }, { onConflict: 'file_path' })
 
     if (error) console.error(`Error syncing ${file}:`, error)

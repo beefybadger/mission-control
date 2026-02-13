@@ -3,11 +3,12 @@
 import { useState, useEffect } from 'react';
 import { getMemories, getTasks } from './actions';
 import { Plus, MoreHorizontal, TrendingUp, DollarSign, Cpu, Clock } from 'lucide-react';
+import type { Task, Memory, UsageData } from '@/types';
 
 export default function MissionControlDashboard() {
-  const [tasks, setTasks] = useState<any[]>([]);
-  const [memories, setMemories] = useState<any[]>([]);
-  const [usage, setUsage] = useState<any>(null);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [memories, setMemories] = useState<Memory[]>([]);
+  const [usage, setUsage] = useState<UsageData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -16,13 +17,13 @@ export default function MissionControlDashboard() {
       const m = await getMemories();
       setTasks(t);
       setMemories(m);
-      
+
       try {
         const res = await fetch('/api/usage');
         const u = await res.json();
         setUsage(u);
       } catch (e) { console.error(e); }
-      
+
       setLoading(false);
     }
     init();
@@ -30,7 +31,7 @@ export default function MissionControlDashboard() {
 
   const backlog = tasks.filter(t => t.status === 'pending');
   const inProgress = tasks.filter(t => t.status === 'in-progress');
-  
+
   const recentActivity = memories.slice(0, 5).map(m => ({
     user: 'baron',
     time: 'Recent',
@@ -41,29 +42,29 @@ export default function MissionControlDashboard() {
     <div className="p-8 max-w-7xl mx-auto">
       {/* 📊 Intelligence Header: Token & Cost Usage */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-12">
-        <UsageCard 
-          label="Session Cost" 
-          value={`$${usage?.sessionCost || '0.00'}`} 
-          sub="Current interaction" 
-          icon={<DollarSign className="w-4 h-4 text-emerald-500" />} 
+        <UsageCard
+          label="Session Cost"
+          value={`$${usage?.sessionCost || '0.00'}`}
+          sub="Current interaction"
+          icon={<DollarSign className="w-4 h-4 text-emerald-500" />}
         />
-        <UsageCard 
-          label="Token Burn" 
-          value={usage?.sessionTokens || '0'} 
-          sub="Total tokens processed" 
-          icon={<Cpu className="w-4 h-4 text-blue-500" />} 
+        <UsageCard
+          label="Token Burn"
+          value={usage?.sessionTokens || '0'}
+          sub="Total tokens processed"
+          icon={<Cpu className="w-4 h-4 text-blue-500" />}
         />
-        <UsageCard 
-          label="Monthly Est." 
-          value={`$${usage?.monthlyEstimated || '0.00'}`} 
-          sub="Projected overhead" 
-          icon={<TrendingUp className="w-4 h-4 text-purple-500" />} 
+        <UsageCard
+          label="Monthly Est."
+          value={`$${usage?.monthlyEstimated || '0.00'}`}
+          sub="Projected overhead"
+          icon={<TrendingUp className="w-4 h-4 text-purple-500" />}
         />
-        <UsageCard 
-          label="Budget" 
-          value={usage?.budgetUsed || '0%'} 
-          sub="of monthly threshold" 
-          icon={<Clock className="w-4 h-4 text-slate-500" />} 
+        <UsageCard
+          label="Budget"
+          value={usage?.budgetUsed || '0%'}
+          sub="of monthly threshold"
+          icon={<Clock className="w-4 h-4 text-slate-500" />}
         />
       </div>
 

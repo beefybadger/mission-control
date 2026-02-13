@@ -4,6 +4,13 @@ import { useState } from 'react';
 import { Users, Brain, MessageSquare, MoreHorizontal, ShieldCheck, Zap, Sparkles } from 'lucide-react';
 import ChatModal from '@/components/ChatModal';
 import { cn } from '@/lib/utils';
+import type { CouncilMember, AgentColor } from '@/types';
+
+const COLOR_MAP: Record<AgentColor, { iconBg: string; iconBorder: string; iconBorderHover: string }> = {
+  blue: { iconBg: 'bg-blue-500/5', iconBorder: 'border-blue-500/10', iconBorderHover: 'group-hover:border-blue-500/40' },
+  emerald: { iconBg: 'bg-emerald-500/5', iconBorder: 'border-emerald-500/10', iconBorderHover: 'group-hover:border-emerald-500/40' },
+  purple: { iconBg: 'bg-purple-500/5', iconBorder: 'border-purple-500/10', iconBorderHover: 'group-hover:border-purple-500/40' },
+};
 
 const COUNCIL_MEMBERS = [
   {
@@ -36,17 +43,17 @@ const COUNCIL_MEMBERS = [
     capabilities: ['Ideation', 'Offer Design', 'UX/UI Direction'],
     color: 'purple'
   }
-];
+] satisfies CouncilMember[];
 
 export default function CouncilPage() {
-  const [activeMember, setActiveMember] = useState<any>(null);
+  const [activeMember, setActiveMember] = useState<CouncilMember | null>(null);
 
   return (
     <div className="max-w-6xl mx-auto pb-20">
       <header className="mb-16">
         <h2 className="text-4xl font-black tracking-tighter text-white mb-4 italic underline decoration-blue-500/30 text-shadow">Council Hierarchy</h2>
         <p className="text-slate-400 text-lg font-medium leading-relaxed max-w-2xl">
-          The specialized task force driving your business automation. 
+          The specialized task force driving your business automation.
           Managed by Baron, fueled by Intelligence and Creativity.
         </p>
       </header>
@@ -80,16 +87,17 @@ export default function CouncilPage() {
         </section>
       </div>
 
-      <ChatModal 
-        member={activeMember} 
-        isOpen={!!activeMember} 
-        onClose={() => setActiveMember(null)} 
+      <ChatModal
+        member={activeMember}
+        isOpen={!!activeMember}
+        onClose={() => setActiveMember(null)}
       />
     </div>
   );
 }
 
-function MemberCard({ member, onMessage, isLead = false }: { member: any, onMessage: () => void, isLead?: boolean }) {
+function MemberCard({ member, onMessage, isLead = false }: { member: CouncilMember, onMessage: () => void, isLead?: boolean }) {
+  const colors = COLOR_MAP[member.color];
   return (
     <div className={cn(
       "bg-[#090909] border border-white/5 rounded-[2rem] overflow-hidden group transition-all duration-500 hover:border-blue-500/30 hover:bg-[#0c0c0c] flex flex-col",
@@ -99,7 +107,7 @@ function MemberCard({ member, onMessage, isLead = false }: { member: any, onMess
         <div className="flex justify-between items-start mb-10">
           <div className={cn(
             "w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-110",
-            `bg-${member.color}-500/5 border border-${member.color}-500/10 group-hover:border-${member.color}-500/40`
+            colors.iconBg, `border ${colors.iconBorder}`, colors.iconBorderHover
           )}>
             {member.id === 'baron' && <Brain className="w-8 h-8 text-blue-500" />}
             {member.id === 'scotty' && <ShieldCheck className="w-8 h-8 text-emerald-500" />}
@@ -118,7 +126,7 @@ function MemberCard({ member, onMessage, isLead = false }: { member: any, onMess
 
         <h3 className="text-3xl font-black text-white tracking-tighter mb-2 italic">{member.name}</h3>
         <p className="text-[11px] font-bold text-blue-500 uppercase tracking-widest mb-6">{member.role}</p>
-        
+
         <p className="text-slate-400 text-sm leading-relaxed mb-10 font-medium">
           {member.description}
         </p>
@@ -131,9 +139,9 @@ function MemberCard({ member, onMessage, isLead = false }: { member: any, onMess
           ))}
         </div>
       </div>
-      
+
       <div className="p-4 bg-black/40 border-t border-white/5 flex gap-2">
-        <button 
+        <button
           onClick={onMessage}
           className="flex-1 bg-white/5 hover:bg-blue-600 text-white text-[11px] font-black uppercase tracking-widest py-4 rounded-2xl transition-all duration-300 flex items-center justify-center gap-3 group"
         >
