@@ -1,0 +1,7 @@
+{
+  "buildCommand": "cd second-brain && npm run build",
+  "devCommand": "cd second-brain && npm run dev",
+  "installCommand": "cd second-brain && npm install",
+  "framework": "nextjs",
+  "outputDirectory": "second-brain/.next"
+}
