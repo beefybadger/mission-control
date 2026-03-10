@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Settings, Shield, Link, Bell, Server, Key } from 'lucide-react';
+import { Shield, Link, Bell, Server, Key } from 'lucide-react';
 
 interface SettingToggle {
   label: string;

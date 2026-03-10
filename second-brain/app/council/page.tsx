@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Users, Brain, MessageSquare, MoreHorizontal, ShieldCheck, Zap, Sparkles } from 'lucide-react';
+import { Brain, MessageSquare, ShieldCheck, Zap, Sparkles, Wrench, LineChart, Shield } from 'lucide-react';
 import ChatModal from '@/components/ChatModal';
 import { cn } from '@/lib/utils';
 import type { CouncilMember, AgentColor } from '@/types';
@@ -27,7 +27,7 @@ const COUNCIL_MEMBERS = [
     id: 'scotty',
     name: 'Scotty',
     role: 'Market Intelligence Scout',
-    level: 'Tier 2: Intelligence',
+    level: 'Tier 2: Execution & Support',
     status: 'Standby',
     description: 'Deep-web researcher. Specialized in trend hunting, competitor auditing, and local lead scouting.',
     capabilities: ['Brave Search', 'Data Scraping', 'Market Audits'],
@@ -37,10 +37,40 @@ const COUNCIL_MEMBERS = [
     id: 'maurice',
     name: 'Maurice',
     role: 'Creative Director',
-    level: 'Tier 2: Creative',
+    level: 'Tier 2: Execution & Support',
     status: 'Standby',
     description: 'Revenue vibe architect. Responsible for offer crafting, marketing angles, and product design.',
     capabilities: ['Ideation', 'Offer Design', 'UX/UI Direction'],
+    color: 'purple'
+  },
+  {
+    id: 'hacker',
+    name: 'Hacker',
+    role: 'Code Engineer & Automation Specialist',
+    level: 'Tier 2: Execution & Support',
+    status: 'Standby',
+    description: 'Builds and maintains automation, scraping, and deployment infrastructure.',
+    capabilities: ['Programming', 'DevOps', 'Automation'],
+    color: 'blue'
+  },
+  {
+    id: 'oracle',
+    name: 'Oracle',
+    role: 'Data Analyst & AI Modeler',
+    level: 'Tier 2: Execution & Support',
+    status: 'Standby',
+    description: 'Interprets market data and patterns to optimize strategy and conversion.',
+    capabilities: ['Data Science', 'Predictive Analytics', 'Modeling'],
+    color: 'emerald'
+  },
+  {
+    id: 'sentinel',
+    name: 'Sentinel',
+    role: 'Operations & Monitoring Specialist',
+    level: 'Tier 2: Execution & Support',
+    status: 'Standby',
+    description: 'Guards uptime, security posture, and operational resilience.',
+    capabilities: ['System Monitoring', 'Security', 'Incident Response'],
     color: 'purple'
   }
 ] satisfies CouncilMember[];
@@ -80,9 +110,10 @@ export default function CouncilPage() {
             <Zap className="text-amber-500 w-5 h-5" />
             <h3 className="text-xs font-bold text-slate-500 uppercase tracking-[0.3em]">Execution & Support</h3>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <MemberCard member={COUNCIL_MEMBERS[1]} onMessage={() => setActiveMember(COUNCIL_MEMBERS[1])} />
-            <MemberCard member={COUNCIL_MEMBERS[2]} onMessage={() => setActiveMember(COUNCIL_MEMBERS[2])} />
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+            {COUNCIL_MEMBERS.slice(1).map((member) => (
+              <MemberCard key={member.id} member={member} onMessage={() => setActiveMember(member)} />
+            ))}
           </div>
         </section>
       </div>
@@ -112,6 +143,9 @@ function MemberCard({ member, onMessage, isLead = false }: { member: CouncilMemb
             {member.id === 'baron' && <Brain className="w-8 h-8 text-blue-500" />}
             {member.id === 'scotty' && <ShieldCheck className="w-8 h-8 text-emerald-500" />}
             {member.id === 'maurice' && <Sparkles className="w-8 h-8 text-purple-500" />}
+            {member.id === 'hacker' && <Wrench className="w-8 h-8 text-blue-500" />}
+            {member.id === 'oracle' && <LineChart className="w-8 h-8 text-emerald-500" />}
+            {member.id === 'sentinel' && <Shield className="w-8 h-8 text-purple-500" />}
           </div>
           <div className="text-right">
             <span className="block text-[10px] font-black text-slate-600 uppercase tracking-widest mb-1">{member.level}</span>

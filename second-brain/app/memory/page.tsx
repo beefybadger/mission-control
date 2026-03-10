@@ -11,19 +11,19 @@ export default function MemoryPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchMemories();
+    async function loadMemories() {
+      const { data, error } = await supabase
+        .from('memories')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (!error && data) setMemories(data as Memory[]);
+      setLoading(false);
+    }
+
+    loadMemories();
   }, []);
-
-  async function fetchMemories() {
-    const { data, error } = await supabase
-      .from('memories')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(50);
-
-    if (!error && data) setMemories(data as Memory[]);
-    setLoading(false);
-  }
 
   const filtered = search
     ? memories.filter(m =>

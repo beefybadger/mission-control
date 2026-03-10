@@ -8,10 +8,6 @@ export default function CronPage() {
   const [jobs, setJobs] = useState<CronJob[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchJobs();
-  }, []);
-
   async function fetchJobs() {
     setLoading(true);
     try {
@@ -23,6 +19,22 @@ export default function CronPage() {
     }
     setLoading(false);
   }
+
+  useEffect(() => {
+    async function loadJobs() {
+      setLoading(true);
+      try {
+        const res = await fetch('/api/cron');
+        const data = await res.json();
+        setJobs(Array.isArray(data) ? data : data.jobs ?? []);
+      } catch (e) {
+        console.error('Failed to fetch cron jobs:', e);
+      }
+      setLoading(false);
+    }
+
+    loadJobs();
+  }, []);
 
   return (
     <div className="p-8 max-w-5xl mx-auto">
@@ -40,6 +52,15 @@ export default function CronPage() {
           <RefreshCw className="w-3.5 h-3.5" /> Refresh
         </button>
       </header>
+
+      <section className="bg-[#090909] border border-white/5 rounded-2xl p-5 mb-6">
+        <h3 className="text-xs font-bold text-white uppercase tracking-widest mb-3">Recommended Revenue Automations</h3>
+        <ul className="space-y-2 text-sm text-slate-300">
+          <li>• 08:00 — Daily Top 3 revenue actions digest</li>
+          <li>• Every 6h — Stale-deal alert sweep for tasks older than 72h</li>
+          <li>• 21:00 — End-of-day conversion review and memory update prompt</li>
+        </ul>
+      </section>
 
       {loading ? (
         <div className="flex items-center justify-center py-20">

@@ -14,18 +14,18 @@ export default function TaskForce() {
   const [filter, setFilter] = useState('all');
 
   useEffect(() => {
-    fetchTasks();
+    async function loadTasks() {
+      const { data, error } = await supabase
+        .from('tasks')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!error && data) setTasks(data as Task[]);
+      setLoading(false);
+    }
+
+    loadTasks();
   }, []);
-
-  async function fetchTasks() {
-    const { data, error } = await supabase
-      .from('tasks')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (!error && data) setTasks(data as Task[]);
-    setLoading(false);
-  }
 
   async function addTask(e: React.FormEvent) {
     e.preventDefault();

@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     LayoutDashboard, ListTodo, Brain,
-    Users, Calendar, Settings, Search, Pause, Play, HardDrive, Clock
+    Users, Calendar, Settings, Search, Pause, Play, HardDrive, Clock, Radar, FileStack
 } from 'lucide-react';
 import { CommandMenu } from './CommandMenu';
 import { cn } from '../lib/utils';
@@ -35,12 +35,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                         <div className="w-6 h-6 bg-blue-600 rounded-md flex items-center justify-center shadow-[0_0_15px_rgba(37,99,235,0.4)]">
                             <LayoutDashboard className="w-4 h-4 text-white" />
                         </div>
-                        <span className="hidden md:block text-[14px] font-bold tracking-tight text-white">Second Brain</span>
+                        <span className="hidden md:block text-[14px] font-bold tracking-tight text-white">Baron OS</span>
                     </div>
 
                     <nav className="flex-1 px-3 space-y-6 overflow-y-auto pt-4 scrollbar-hide">
                         <NavGroup label="Main">
-                            <NavItem href="/" icon={<LayoutDashboard size={18} />} label="Dashboard" active={pathname === '/'} />
+                            <NavItem href="/" icon={<LayoutDashboard size={18} />} label="Freedom Scoreboard" active={pathname === '/'} />
+                            <NavItem href="/opportunities" icon={<Radar size={18} />} label="Opportunity Radar" active={pathname === '/opportunities'} />
+                            <NavItem href="/offers" icon={<FileStack size={18} />} label="Offer Sprint" active={pathname === '/offers'} />
                             <NavItem href="/tasks" icon={<ListTodo size={18} />} label="Tasks" active={pathname === '/tasks'} />
                             <NavItem href="/memory" icon={<Brain size={18} />} label="Memory" active={pathname === '/memory'} />
                         </NavGroup>

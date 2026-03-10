@@ -3,8 +3,8 @@ import AppShell from '../components/AppShell';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Second Brain — Mission Control',
-  description: 'AI agent dashboard for OpenClaw. Monitor tasks, memory, cron jobs, and agent council.',
+  title: 'Baron OS — Mission Control',
+  description: 'Revenue operations cockpit for Robert: scoreboard, opportunities, offers, tasks, and execution loop.',
 };
 
 export default function RootLayout({

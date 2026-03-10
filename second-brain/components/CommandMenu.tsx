@@ -5,9 +5,8 @@ import { useRouter } from 'next/navigation'
 import { Command } from 'cmdk'
 import {
   LayoutDashboard, ListTodo, Brain, Users,
-  Calendar, Settings, Search, Plus, Zap
+  Calendar, Settings, Search, Plus, Zap, Radar, FileStack
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
 
 export function CommandMenu() {
   const [open, setOpen] = React.useState(false)
@@ -52,7 +51,9 @@ export function CommandMenu() {
           <Command.Empty className="py-8 text-center text-sm text-slate-500">No results found.</Command.Empty>
 
           <Command.Group heading="Navigation" className="px-2 py-1 text-[11px] font-bold text-slate-600 uppercase tracking-widest">
-            <Item icon={<LayoutDashboard />} label="Dashboard" onSelect={() => runCommand(() => router.push('/'))} />
+            <Item icon={<LayoutDashboard />} label="Freedom Scoreboard" onSelect={() => runCommand(() => router.push('/'))} />
+            <Item icon={<Radar />} label="Opportunity Radar" onSelect={() => runCommand(() => router.push('/opportunities'))} />
+            <Item icon={<FileStack />} label="Offer Sprint" onSelect={() => runCommand(() => router.push('/offers'))} />
             <Item icon={<ListTodo />} label="Tasks" onSelect={() => runCommand(() => router.push('/tasks'))} />
             <Item icon={<Brain />} label="Memory" onSelect={() => runCommand(() => router.push('/memory'))} />
           </Command.Group>
@@ -78,7 +79,7 @@ export function CommandMenu() {
             <FooterKey label="Enter" action="Select" />
             <FooterKey label="↑↓" action="Navigate" />
           </div>
-          <span className="text-[10px] font-bold text-slate-700 tracking-tight uppercase">Second Brain Engine</span>
+          <span className="text-[10px] font-bold text-slate-700 tracking-tight uppercase">Baron OS Engine</span>
         </div>
       </div>
     </Command.Dialog>

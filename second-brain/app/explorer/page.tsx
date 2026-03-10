@@ -11,18 +11,18 @@ export default function ExplorerPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchFiles();
+    async function loadFiles() {
+      const { data, error } = await supabase
+        .from('memories')
+        .select('*')
+        .order('file_path', { ascending: true });
+
+      if (!error && data) setFiles(data as Memory[]);
+      setLoading(false);
+    }
+
+    loadFiles();
   }, []);
-
-  async function fetchFiles() {
-    const { data, error } = await supabase
-      .from('memories')
-      .select('*')
-      .order('file_path', { ascending: true });
-
-    if (!error && data) setFiles(data as Memory[]);
-    setLoading(false);
-  }
 
   return (
     <div className="p-8 max-w-6xl mx-auto">

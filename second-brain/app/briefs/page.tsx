@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Calendar, Search, BookOpen } from 'lucide-react';
+import { Calendar, BookOpen } from 'lucide-react';
 import type { Memory } from '@/types';
 
 export default function BriefsPage() {
@@ -10,19 +10,19 @@ export default function BriefsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchBriefs();
+    async function loadBriefs() {
+      const { data, error } = await supabase
+        .from('memories')
+        .select('*')
+        .ilike('file_path', '%brief%')
+        .order('created_at', { ascending: false });
+
+      if (!error && data) setBriefs(data as Memory[]);
+      setLoading(false);
+    }
+
+    loadBriefs();
   }, []);
-
-  async function fetchBriefs() {
-    const { data, error } = await supabase
-      .from('memories')
-      .select('*')
-      .ilike('file_path', '%brief%')
-      .order('created_at', { ascending: false });
-
-    if (!error && data) setBriefs(data as Memory[]);
-    setLoading(false);
-  }
 
   return (
     <div className="p-8 max-w-5xl mx-auto">

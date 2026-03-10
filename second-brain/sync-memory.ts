@@ -14,7 +14,7 @@ async function syncMemoriesWithEmbeddings() {
 
     // Generate Embedding via OpenClaw's internal capabilities
     // This is where we turn text into a vector
-    const embedding = await generateEmbedding(content)
+    const embedding = await generateEmbedding()
 
     const { error } = await supabaseAdmin
       .from('memories')
@@ -30,7 +30,7 @@ async function syncMemoriesWithEmbeddings() {
   }
 }
 
-async function generateEmbedding(text: string) {
+async function generateEmbedding() {
   // Logic to call the model for embeddings
   // For the POC, we'll use a placeholder that matches the vector(1536) dimension
   return Array(1536).fill(0).map(() => Math.random())

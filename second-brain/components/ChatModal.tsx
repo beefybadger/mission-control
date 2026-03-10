@@ -18,12 +18,22 @@ export default function ChatModal({ member, isOpen, onClose }: { member: Council
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    async function loadMessages() {
+      const { data } = await supabase
+        .from('memories')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (data) setMessages((data as ChatMessage[]).reverse());
+    }
+
     if (isOpen) {
-      fetchMessages();
+      loadMessages();
       const subscription = supabase
         .channel('public:memories')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'memories' }, () => {
-          fetchMessages();
+          loadMessages();
         })
         .subscribe();
 
@@ -36,16 +46,6 @@ export default function ChatModal({ member, isOpen, onClose }: { member: Council
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
-
-  async function fetchMessages() {
-    const { data } = await supabase
-      .from('memories')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(20);
-
-    if (data) setMessages((data as ChatMessage[]).reverse());
-  }
 
   async function sendMessage(e: React.FormEvent) {
     e.preventDefault();
