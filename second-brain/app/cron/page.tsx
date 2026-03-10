@@ -7,6 +7,8 @@ import type { CronJob } from '@/types';
 export default function CronPage() {
   const [jobs, setJobs] = useState<CronJob[]>([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [notice, setNotice] = useState<string>('');
 
   async function fetchJobs() {
     setLoading(true);
@@ -21,7 +23,7 @@ export default function CronPage() {
   }
 
   useEffect(() => {
-    async function loadJobs() {
+    async function loadInitialJobs() {
       setLoading(true);
       try {
         const res = await fetch('/api/cron');
@@ -33,8 +35,36 @@ export default function CronPage() {
       setLoading(false);
     }
 
-    loadJobs();
+    loadInitialJobs();
   }, []);
+
+  async function applyAction(action: 'installRevenueOps' | 'removeRevenueOps') {
+    setSaving(true);
+    setNotice('');
+    try {
+      const res = await fetch('/api/cron', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setNotice(data?.error ?? 'Action failed.');
+      } else {
+        if (action === 'installRevenueOps') {
+          setNotice(`Installed: ${data.created?.length ?? 0}, skipped existing: ${data.skipped?.length ?? 0}.`);
+        } else {
+          setNotice(`Removed: ${data.removed?.length ?? 0} revenue jobs.`);
+        }
+        setJobs(Array.isArray(data.jobs) ? data.jobs : []);
+      }
+    } catch (error) {
+      console.error(error);
+      setNotice('Action failed due to network/server error.');
+    }
+    setSaving(false);
+  }
 
   return (
     <div className="p-8 max-w-5xl mx-auto">
@@ -55,11 +85,30 @@ export default function CronPage() {
 
       <section className="bg-[#090909] border border-white/5 rounded-2xl p-5 mb-6">
         <h3 className="text-xs font-bold text-white uppercase tracking-widest mb-3">Recommended Revenue Automations</h3>
-        <ul className="space-y-2 text-sm text-slate-300">
+        <ul className="space-y-2 text-sm text-slate-300 mb-4">
           <li>• 08:00 — Daily Top 3 revenue actions digest</li>
           <li>• Every 6h — Stale-deal alert sweep for tasks older than 72h</li>
           <li>• 21:00 — End-of-day conversion review and memory update prompt</li>
         </ul>
+
+        <div className="flex flex-wrap gap-3">
+          <button
+            onClick={() => applyAction('installRevenueOps')}
+            disabled={saving}
+            className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 text-sm font-semibold text-white"
+          >
+            {saving ? 'Applying...' : 'Install Revenue Automations'}
+          </button>
+          <button
+            onClick={() => applyAction('removeRevenueOps')}
+            disabled={saving}
+            className="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-60 text-sm font-semibold text-slate-200"
+          >
+            Remove Revenue Automations
+          </button>
+        </div>
+
+        {notice && <p className="text-xs text-blue-300 mt-3">{notice}</p>}
       </section>
 
       {loading ? (
@@ -88,8 +137,8 @@ export default function CronPage() {
               </div>
               <div className="flex items-center gap-3">
                 <span className={`text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border ${job.enabled
-                    ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
-                    : 'bg-slate-500/10 text-slate-500 border-white/5'
+                  ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                  : 'bg-slate-500/10 text-slate-500 border-white/5'
                   }`}>
                   {job.enabled ? 'Active' : 'Disabled'}
                 </span>
