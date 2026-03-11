@@ -15,8 +15,8 @@ type LiveState = {
 
 type PositionedMember = CouncilMember & {
   live?: LiveState;
-  x: number;
-  y: number;
+  gx: number;
+  gy: number;
 };
 
 const MEMBERS: CouncilMember[] = [
@@ -37,12 +37,25 @@ const SPRITES: Record<string, string[]> = {
   sentinel: ['..rr..', '.rwwr.', '.rkkr.', '.ryyr.', '.r..r.', '..rr..'],
 };
 
-const CUBICLE_SPOTS = [
-  { x: 12, y: 20 }, { x: 30, y: 20 }, { x: 48, y: 20 }, { x: 12, y: 43 }, { x: 30, y: 43 }, { x: 48, y: 43 },
+const WORK_SPOTS = [
+  { gx: 2, gy: 2 }, { gx: 4, gy: 2 }, { gx: 6, gy: 2 },
+  { gx: 2, gy: 4 }, { gx: 4, gy: 4 }, { gx: 6, gy: 4 },
 ];
-const RELAX_SPOTS = [{ x: 73, y: 70 }, { x: 84, y: 68 }, { x: 77, y: 82 }, { x: 88, y: 82 }];
-const BARON_SPOT = { x: 79, y: 22 };
-const OFFLINE_SPOT = { x: 6, y: 84 };
+const RELAX_SPOTS = [{ gx: 9, gy: 7 }, { gx: 10, gy: 7 }, { gx: 9, gy: 8 }, { gx: 10, gy: 8 }];
+const BARON_SPOT = { gx: 10, gy: 2 };
+const OFFLINE_SPOT = { gx: 1, gy: 9 };
+
+const TILE_W = 46;
+const TILE_H = 24;
+const ORIGIN_X = 320;
+const ORIGIN_Y = 72;
+
+function project(gx: number, gy: number) {
+  return {
+    x: ORIGIN_X + (gx - gy) * (TILE_W / 2),
+    y: ORIGIN_Y + (gx + gy) * (TILE_H / 2),
+  };
+}
 
 export default function CouncilPage() {
   const [activeMember, setActiveMember] = useState<CouncilMember | null>(null);
@@ -79,28 +92,30 @@ export default function CouncilPage() {
   const positioned = useMemo(() => {
     const merged = MEMBERS.map((m) => ({ ...m, live: states.find((s) => s.id === m.id) }));
 
-    const baron = merged.filter((m) => m.id === 'baron').map((m) => ({ ...m, x: BARON_SPOT.x, y: BARON_SPOT.y }));
+    const baron = merged.filter((m) => m.id === 'baron').map((m) => ({ ...m, gx: BARON_SPOT.gx, gy: BARON_SPOT.gy }));
 
     const workers = merged
       .filter((m) => m.id !== 'baron' && m.live?.status === 'working')
-      .map((m, idx) => {
-        const spot = CUBICLE_SPOTS[idx % CUBICLE_SPOTS.length];
-        return { ...m, x: spot.x, y: spot.y };
-      });
-
-    const offline = merged
-      .filter((m) => m.id !== 'baron' && m.live?.status === 'offline')
-      .map((m) => ({ ...m, x: OFFLINE_SPOT.x, y: OFFLINE_SPOT.y }));
+      .map((m, idx) => ({ ...m, gx: WORK_SPOTS[idx % WORK_SPOTS.length].gx, gy: WORK_SPOTS[idx % WORK_SPOTS.length].gy }));
 
     const idle = merged
       .filter((m) => m.id !== 'baron' && (!m.live || m.live.status === 'idle'))
-      .map((m, idx) => {
-        const spot = RELAX_SPOTS[idx % RELAX_SPOTS.length];
-        return { ...m, x: spot.x, y: spot.y };
-      });
+      .map((m, idx) => ({ ...m, gx: RELAX_SPOTS[idx % RELAX_SPOTS.length].gx, gy: RELAX_SPOTS[idx % RELAX_SPOTS.length].gy }));
 
-    return [...baron, ...workers, ...offline, ...idle] as PositionedMember[];
+    const offline = merged
+      .filter((m) => m.id !== 'baron' && m.live?.status === 'offline')
+      .map((m) => ({ ...m, gx: OFFLINE_SPOT.gx, gy: OFFLINE_SPOT.gy }));
+
+    return [...baron, ...workers, ...idle, ...offline] as PositionedMember[];
   }, [states]);
+
+  const tiles = useMemo(() => {
+    const out: { gx: number; gy: number }[] = [];
+    for (let gx = 0; gx <= 12; gx += 1) {
+      for (let gy = 0; gy <= 10; gy += 1) out.push({ gx, gy });
+    }
+    return out;
+  }, []);
 
   return (
     <div className="max-w-7xl mx-auto p-6 md:p-8 pb-16">
@@ -108,7 +123,7 @@ export default function CouncilPage() {
         <div>
           <h2 className="text-3xl font-black tracking-tight text-white mb-2">Council Office Live View</h2>
           <p className="text-slate-400 text-sm max-w-3xl">
-            Real-style office layout. Working agents stay in cubicles, idle agents move to the relax room, Baron stays in his private office.
+            Stardew-inspired isometric office: live status controls where each avatar moves. Baron has his own private office.
           </p>
         </div>
         <button onClick={refreshStates} className="pixel-btn px-3 py-1.5 text-xs flex items-center gap-1">
@@ -116,34 +131,27 @@ export default function CouncilPage() {
         </button>
       </header>
 
-      <div className="pixel-card p-4 mb-6">
-        <div className="relative h-[540px] md:h-[520px] wire-soft overflow-hidden">
-          <div className="absolute inset-0 opacity-20" style={{
-            backgroundImage: 'linear-gradient(to right, #000 1px, transparent 1px), linear-gradient(to bottom, #000 1px, transparent 1px)',
-            backgroundSize: '18px 18px',
-          }} />
+      <div className="pixel-card p-4 mb-6 overflow-x-auto">
+        <div className="relative min-w-[660px] h-[500px] wire-soft">
+          {tiles.map((t) => {
+            const p = project(t.gx, t.gy);
+            return (
+              <IsoTile key={`${t.gx}-${t.gy}`} x={p.x} y={p.y} />
+            );
+          })}
 
-          <Room label="Open Workspace" x={6} y={12} w={58} h={58} />
-          <Room label="Baron Office" x={69} y={10} w={25} h={28} />
-          <Room label="Relax Room" x={67} y={62} w={27} h={28} />
-          <Room label="Entry" x={2} y={76} w={19} h={18} />
+          <IsoZone label="Open Workspace" gx={4} gy={3} w={6} h={5} tone="blue" />
+          <IsoZone label="Baron Office" gx={10} gy={2} w={2.5} h={3} tone="amber" />
+          <IsoZone label="Relax Room" gx={9.6} gy={7.6} w={2.5} h={2.4} tone="emerald" />
 
-          {/* Cubicles */}
-          {CUBICLE_SPOTS.map((d, i) => (
-            <Desk key={i} x={d.x} y={d.y} />
-          ))}
-
-          {/* Relax furniture */}
-          <Sofa x={72} y={74} />
-          <Sofa x={83} y={74} />
-          <CoffeeTable x={78} y={82} />
+          {WORK_SPOTS.map((s, i) => <IsoDesk key={i} gx={s.gx} gy={s.gy} />)}
+          <IsoSofa gx={9.2} gy={7.7} />
+          <IsoSofa gx={10.3} gy={7.8} />
+          <IsoPlant gx={9.2} gy={2.2} />
+          <IsoPlant gx={10.8} gy={2.2} />
 
           {positioned.map((member) => (
-            <Avatar
-              key={member.id}
-              member={member}
-              onClick={() => setActiveMember(member)}
-            />
+            <IsoAvatar key={member.id} member={member} onClick={() => setActiveMember(member)} />
           ))}
         </div>
       </div>
@@ -177,31 +185,70 @@ export default function CouncilPage() {
   );
 }
 
-function Room({ label, x, y, w, h }: { label: string; x: number; y: number; w: number; h: number }) {
+function IsoTile({ x, y }: { x: number; y: number }) {
   return (
-    <div className="absolute border-2 border-black/70 rounded-md bg-white/20" style={{ left: `${x}%`, top: `${y}%`, width: `${w}%`, height: `${h}%` }}>
-      <span className="absolute -top-5 left-0 text-[10px] text-zinc-700 font-bold uppercase tracking-wider">{label}</span>
+    <div
+      className="absolute"
+      style={{ left: x, top: y, transform: 'translate(-50%, -50%)' }}
+    >
+      <div
+        className="w-[46px] h-[24px] border border-black/30"
+        style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)', background: '#c8d2c3' }}
+      />
     </div>
   );
 }
 
-function Desk({ x, y }: { x: number; y: number }) {
+function IsoZone({ label, gx, gy, w, h, tone }: { label: string; gx: number; gy: number; w: number; h: number; tone: 'blue' | 'amber' | 'emerald' }) {
+  const p = project(gx, gy);
+  const color = tone === 'blue' ? '#93c5fd' : tone === 'amber' ? '#fcd34d' : '#86efac';
   return (
-    <div className="absolute w-12 h-8 bg-[#d9dee6] border-2 border-black rounded-sm" style={{ left: `${x}%`, top: `${y}%` }}>
-      <div className="w-4 h-2 bg-[#8aa1c2] border border-black mt-1 ml-1" />
+    <div className="absolute" style={{ left: p.x, top: p.y }}>
+      <div
+        className="absolute border-2 border-black/60"
+        style={{
+          width: w * TILE_W,
+          height: h * TILE_H,
+          transform: 'translate(-50%, -50%)',
+          background: `${color}66`,
+          clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
+        }}
+      />
+      <div className="absolute -top-4 left-0 text-[10px] font-bold text-zinc-800 bg-white/80 px-1 rounded">{label}</div>
     </div>
   );
 }
 
-function Sofa({ x, y }: { x: number; y: number }) {
-  return <div className="absolute w-14 h-8 bg-[#facc15] border-2 border-black rounded-sm" style={{ left: `${x}%`, top: `${y}%` }} />;
+function IsoDesk({ gx, gy }: { gx: number; gy: number }) {
+  const p = project(gx, gy);
+  return (
+    <div className="absolute" style={{ left: p.x, top: p.y, transform: 'translate(-50%, -50%)' }}>
+      <div className="w-7 h-4 border border-black bg-[#d1d8e2]" style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)' }} />
+      <div className="w-2 h-1 bg-[#7ea3cc] border border-black absolute left-2.5 top-1.5" />
+    </div>
+  );
 }
 
-function CoffeeTable({ x, y }: { x: number; y: number }) {
-  return <div className="absolute w-10 h-6 bg-[#94a3b8] border-2 border-black rounded-sm" style={{ left: `${x}%`, top: `${y}%` }} />;
+function IsoSofa({ gx, gy }: { gx: number; gy: number }) {
+  const p = project(gx, gy);
+  return (
+    <div className="absolute" style={{ left: p.x, top: p.y, transform: 'translate(-50%, -50%)' }}>
+      <div className="w-9 h-5 border border-black bg-[#fbbf24]" style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)' }} />
+    </div>
+  );
 }
 
-function Avatar({ member, onClick }: { member: PositionedMember; onClick: () => void }) {
+function IsoPlant({ gx, gy }: { gx: number; gy: number }) {
+  const p = project(gx, gy);
+  return (
+    <div className="absolute" style={{ left: p.x, top: p.y, transform: 'translate(-50%, -50%)' }}>
+      <div className="w-4 h-3 border border-black bg-[#22c55e]" style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)' }} />
+    </div>
+  );
+}
+
+function IsoAvatar({ member, onClick }: { member: PositionedMember; onClick: () => void }) {
+  const p = project(member.gx, member.gy);
   const status = member.live?.status ?? 'idle';
   const animation = status === 'working' ? 'floatWork 1.1s ease-in-out infinite' : status === 'idle' ? 'floatIdle 2.8s ease-in-out infinite' : undefined;
 
@@ -209,9 +256,9 @@ function Avatar({ member, onClick }: { member: PositionedMember; onClick: () => 
     <motion.button
       onClick={onClick}
       className="absolute group"
-      animate={{ left: `${member.x}%`, top: `${member.y}%` }}
-      transition={{ duration: 0.6, ease: 'easeInOut' }}
-      style={{ animation }}
+      animate={{ left: p.x, top: p.y - 18 }}
+      transition={{ duration: 0.55, ease: 'easeInOut' }}
+      style={{ transform: 'translate(-50%, -50%)', animation }}
     >
       <div className="w-10 h-10 border-2 border-black rounded-sm bg-yellow-300 shadow-[2px_2px_0_#000] flex items-center justify-center">
         <PixelSprite id={member.id} />
