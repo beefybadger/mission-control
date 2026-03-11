@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Command } from 'cmdk'
 import {
   LayoutDashboard, ListTodo, Brain, Users,
-  Calendar, Settings, Search, Plus, Zap, Radar, FileStack
+  Calendar, Settings, Search, Plus, Zap, Radar, FileStack, Activity
 } from 'lucide-react'
 
 export function CommandMenu() {
@@ -62,6 +62,7 @@ export function CommandMenu() {
 
           <Command.Group heading="Knowledge" className="px-2 py-1 text-[11px] font-bold text-slate-600 uppercase tracking-widest">
             <Item icon={<Users />} label="Council" onSelect={() => runCommand(() => router.push('/council'))} />
+            <Item icon={<Activity />} label="Ops Log" onSelect={() => runCommand(() => router.push('/ops'))} />
             <Item icon={<Calendar />} label="Briefs" onSelect={() => runCommand(() => router.push('/briefs'))} />
           </Command.Group>
 

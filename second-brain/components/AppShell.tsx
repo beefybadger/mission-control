@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     LayoutDashboard, ListTodo, Brain,
-    Users, Calendar, Settings, Search, Pause, Play, HardDrive, Clock, Radar, FileStack
+    Users, Calendar, Settings, Search, Pause, Play, HardDrive, Clock, Radar, FileStack, Activity
 } from 'lucide-react';
 import { CommandMenu } from './CommandMenu';
 import { cn } from '../lib/utils';
@@ -49,6 +49,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
                         <NavGroup label="Automation">
                             <NavItem href="/cron" icon={<Clock size={18} />} label="Cron Ops" active={pathname === '/cron'} />
+                            <NavItem href="/ops" icon={<Activity size={18} />} label="Ops Log" active={pathname === '/ops'} />
                             <NavItem href="/briefs" icon={<Calendar size={18} />} label="Briefs" active={pathname === '/briefs'} />
                         </NavGroup>
 
