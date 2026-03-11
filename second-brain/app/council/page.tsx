@@ -15,17 +15,17 @@ type LiveState = {
 
 type PositionedMember = CouncilMember & {
   live?: LiveState;
-  gx: number;
-  gy: number;
+  x: number;
+  y: number;
 };
 
 const MEMBERS: CouncilMember[] = [
-  { id: 'baron', name: 'Baron', role: 'Lead Strategist & Architect', level: 'Tier 1: Command', status: 'Active', description: 'System architecture and strategic command.', capabilities: ['Architecture', 'Decision Engine'], color: 'blue' },
-  { id: 'scotty', name: 'Scotty', role: 'Market Intelligence Scout', level: 'Tier 2', status: 'Standby', description: 'Market trends and demand signals.', capabilities: ['Research', 'Trend Scan'], color: 'emerald' },
-  { id: 'maurice', name: 'Maurice', role: 'Creative Director', level: 'Tier 2', status: 'Standby', description: 'Offer design and conversion copy.', capabilities: ['Offer Design', 'UX'], color: 'purple' },
-  { id: 'hacker', name: 'Hacker', role: 'Code Engineer', level: 'Tier 2', status: 'Standby', description: 'Build and automation delivery.', capabilities: ['Engineering', 'Automation'], color: 'blue' },
-  { id: 'oracle', name: 'Oracle', role: 'Data Analyst', level: 'Tier 2', status: 'Standby', description: 'Metrics and pattern analysis.', capabilities: ['Analytics', 'Forecasting'], color: 'emerald' },
-  { id: 'sentinel', name: 'Sentinel', role: 'Ops & Monitoring', level: 'Tier 2', status: 'Standby', description: 'Operational resilience and alerts.', capabilities: ['Monitoring', 'Security'], color: 'purple' },
+  { id: 'baron', name: 'Baron', role: 'Lead Strategist & Architect', level: 'Tier 1', status: 'Active', description: '', capabilities: [], color: 'blue' },
+  { id: 'scotty', name: 'Scotty', role: 'Market Intelligence Scout', level: 'Tier 2', status: 'Standby', description: '', capabilities: [], color: 'emerald' },
+  { id: 'maurice', name: 'Maurice', role: 'Creative Director', level: 'Tier 2', status: 'Standby', description: '', capabilities: [], color: 'purple' },
+  { id: 'hacker', name: 'Hacker', role: 'Code Engineer', level: 'Tier 2', status: 'Standby', description: '', capabilities: [], color: 'blue' },
+  { id: 'oracle', name: 'Oracle', role: 'Data Analyst', level: 'Tier 2', status: 'Standby', description: '', capabilities: [], color: 'emerald' },
+  { id: 'sentinel', name: 'Sentinel', role: 'Ops & Monitoring', level: 'Tier 2', status: 'Standby', description: '', capabilities: [], color: 'purple' },
 ];
 
 const SPRITES: Record<string, string[]> = {
@@ -38,24 +38,13 @@ const SPRITES: Record<string, string[]> = {
 };
 
 const WORK_SPOTS = [
-  { gx: 2, gy: 2 }, { gx: 4, gy: 2 }, { gx: 6, gy: 2 },
-  { gx: 2, gy: 4 }, { gx: 4, gy: 4 }, { gx: 6, gy: 4 },
+  { x: 180, y: 175 }, { x: 260, y: 198 }, { x: 340, y: 220 }, { x: 420, y: 243 },
 ];
-const RELAX_SPOTS = [{ gx: 9, gy: 7 }, { gx: 10, gy: 7 }, { gx: 9, gy: 8 }, { gx: 10, gy: 8 }];
-const BARON_SPOT = { gx: 10, gy: 2 };
-const OFFLINE_SPOT = { gx: 1, gy: 9 };
-
-const TILE_W = 46;
-const TILE_H = 24;
-const ORIGIN_X = 320;
-const ORIGIN_Y = 72;
-
-function project(gx: number, gy: number) {
-  return {
-    x: ORIGIN_X + (gx - gy) * (TILE_W / 2),
-    y: ORIGIN_Y + (gx + gy) * (TILE_H / 2),
-  };
-}
+const RELAX_SPOTS = [
+  { x: 505, y: 275 }, { x: 560, y: 292 }, { x: 525, y: 325 },
+];
+const BARON_SPOT = { x: 490, y: 148 };
+const OFFLINE_SPOT = { x: 110, y: 310 };
 
 export default function CouncilPage() {
   const [activeMember, setActiveMember] = useState<CouncilMember | null>(null);
@@ -92,30 +81,19 @@ export default function CouncilPage() {
   const positioned = useMemo(() => {
     const merged = MEMBERS.map((m) => ({ ...m, live: states.find((s) => s.id === m.id) }));
 
-    const baron = merged.filter((m) => m.id === 'baron').map((m) => ({ ...m, gx: BARON_SPOT.gx, gy: BARON_SPOT.gy }));
-
+    const baron = merged.filter((m) => m.id === 'baron').map((m) => ({ ...m, x: BARON_SPOT.x, y: BARON_SPOT.y }));
     const workers = merged
       .filter((m) => m.id !== 'baron' && m.live?.status === 'working')
-      .map((m, idx) => ({ ...m, gx: WORK_SPOTS[idx % WORK_SPOTS.length].gx, gy: WORK_SPOTS[idx % WORK_SPOTS.length].gy }));
-
+      .map((m, i) => ({ ...m, x: WORK_SPOTS[i % WORK_SPOTS.length].x, y: WORK_SPOTS[i % WORK_SPOTS.length].y }));
     const idle = merged
       .filter((m) => m.id !== 'baron' && (!m.live || m.live.status === 'idle'))
-      .map((m, idx) => ({ ...m, gx: RELAX_SPOTS[idx % RELAX_SPOTS.length].gx, gy: RELAX_SPOTS[idx % RELAX_SPOTS.length].gy }));
-
+      .map((m, i) => ({ ...m, x: RELAX_SPOTS[i % RELAX_SPOTS.length].x, y: RELAX_SPOTS[i % RELAX_SPOTS.length].y }));
     const offline = merged
       .filter((m) => m.id !== 'baron' && m.live?.status === 'offline')
-      .map((m) => ({ ...m, gx: OFFLINE_SPOT.gx, gy: OFFLINE_SPOT.gy }));
+      .map((m) => ({ ...m, x: OFFLINE_SPOT.x, y: OFFLINE_SPOT.y }));
 
     return [...baron, ...workers, ...idle, ...offline] as PositionedMember[];
   }, [states]);
-
-  const tiles = useMemo(() => {
-    const out: { gx: number; gy: number }[] = [];
-    for (let gx = 0; gx <= 12; gx += 1) {
-      for (let gy = 0; gy <= 10; gy += 1) out.push({ gx, gy });
-    }
-    return out;
-  }, []);
 
   return (
     <div className="max-w-7xl mx-auto p-6 md:p-8 pb-16">
@@ -123,7 +101,7 @@ export default function CouncilPage() {
         <div>
           <h2 className="text-3xl font-black tracking-tight text-white mb-2">Council Office Live View</h2>
           <p className="text-slate-400 text-sm max-w-3xl">
-            Stardew-inspired isometric office: live status controls where each avatar moves. Baron has his own private office.
+            Clean isometric office style with live behavior. Working agents stay at desks, idle agents move to lounge, Baron has private office.
           </p>
         </div>
         <button onClick={refreshStates} className="pixel-btn px-3 py-1.5 text-xs flex items-center gap-1">
@@ -132,26 +110,11 @@ export default function CouncilPage() {
       </header>
 
       <div className="pixel-card p-4 mb-6 overflow-x-auto">
-        <div className="relative min-w-[660px] h-[500px] wire-soft">
-          {tiles.map((t) => {
-            const p = project(t.gx, t.gy);
-            return (
-              <IsoTile key={`${t.gx}-${t.gy}`} x={p.x} y={p.y} />
-            );
-          })}
-
-          <IsoZone label="Open Workspace" gx={4} gy={3} w={6} h={5} tone="blue" />
-          <IsoZone label="Baron Office" gx={10} gy={2} w={2.5} h={3} tone="amber" />
-          <IsoZone label="Relax Room" gx={9.6} gy={7.6} w={2.5} h={2.4} tone="emerald" />
-
-          {WORK_SPOTS.map((s, i) => <IsoDesk key={i} gx={s.gx} gy={s.gy} />)}
-          <IsoSofa gx={9.2} gy={7.7} />
-          <IsoSofa gx={10.3} gy={7.8} />
-          <IsoPlant gx={9.2} gy={2.2} />
-          <IsoPlant gx={10.8} gy={2.2} />
+        <div className="relative min-w-[720px] h-[470px] wire-soft">
+          <OfficeIsometricScene />
 
           {positioned.map((member) => (
-            <IsoAvatar key={member.id} member={member} onClick={() => setActiveMember(member)} />
+            <Avatar key={member.id} member={member} onClick={() => setActiveMember(member)} />
           ))}
         </div>
       </div>
@@ -185,70 +148,50 @@ export default function CouncilPage() {
   );
 }
 
-function IsoTile({ x, y }: { x: number; y: number }) {
+function OfficeIsometricScene() {
   return (
-    <div
-      className="absolute"
-      style={{ left: x, top: y, transform: 'translate(-50%, -50%)' }}
-    >
-      <div
-        className="w-[46px] h-[24px] border border-black/30"
-        style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)', background: '#c8d2c3' }}
-      />
-    </div>
+    <svg viewBox="0 0 720 470" className="absolute inset-0 w-full h-full">
+      {/* Floor */}
+      <polygon points="140,120 520,40 660,170 280,250" fill="#cfb495" stroke="#8b6b4e" strokeWidth="2" />
+
+      {/* Left wall */}
+      <polygon points="140,120 280,250 280,120 140,-10" fill="#e8d9c8" stroke="#8b6b4e" strokeWidth="2" />
+      {/* Right wall */}
+      <polygon points="520,40 660,170 660,40 520,-90" fill="#e3d3c1" stroke="#8b6b4e" strokeWidth="2" />
+
+      {/* Baron office glass */}
+      <polygon points="430,72 530,50 585,100 485,122" fill="#9ec5e8" opacity="0.55" stroke="#5f7f99" strokeWidth="2" />
+
+      {/* Cubicle desks */}
+      <polygon points="170,165 225,153 247,173 192,185" fill="#d9dee6" stroke="#6d7786" strokeWidth="2" />
+      <polygon points="245,187 300,175 322,195 267,207" fill="#d9dee6" stroke="#6d7786" strokeWidth="2" />
+      <polygon points="320,210 375,198 397,218 342,230" fill="#d9dee6" stroke="#6d7786" strokeWidth="2" />
+      <polygon points="395,233 450,221 472,241 417,253" fill="#d9dee6" stroke="#6d7786" strokeWidth="2" />
+
+      {/* Chairs */}
+      <polygon points="206,183 220,180 225,186 211,189" fill="#6b7280" stroke="#111827" strokeWidth="1" />
+      <polygon points="281,205 295,202 300,208 286,211" fill="#6b7280" stroke="#111827" strokeWidth="1" />
+      <polygon points="356,228 370,225 375,231 361,234" fill="#6b7280" stroke="#111827" strokeWidth="1" />
+      <polygon points="431,251 445,248 450,254 436,257" fill="#6b7280" stroke="#111827" strokeWidth="1" />
+
+      {/* Relax room */}
+      <polygon points="490,255 555,241 578,262 513,276" fill="#f8d45d" stroke="#a77c00" strokeWidth="2" />
+      <polygon points="525,289 590,275 613,296 548,310" fill="#f8d45d" stroke="#a77c00" strokeWidth="2" />
+      <polygon points="530,265 560,258 572,270 542,277" fill="#94a3b8" stroke="#475569" strokeWidth="2" />
+
+      {/* Plants */}
+      <polygon points="150,115 162,112 167,118 155,121" fill="#22c55e" stroke="#166534" strokeWidth="1" />
+      <polygon points="610,150 622,147 627,153 615,156" fill="#22c55e" stroke="#166534" strokeWidth="1" />
+
+      {/* Labels */}
+      <text x="170" y="98" fontSize="11" fontWeight="700" fill="#374151">Open Workspace</text>
+      <text x="495" y="88" fontSize="11" fontWeight="700" fill="#374151">Baron Office</text>
+      <text x="535" y="237" fontSize="11" fontWeight="700" fill="#374151">Relax Room</text>
+    </svg>
   );
 }
 
-function IsoZone({ label, gx, gy, w, h, tone }: { label: string; gx: number; gy: number; w: number; h: number; tone: 'blue' | 'amber' | 'emerald' }) {
-  const p = project(gx, gy);
-  const color = tone === 'blue' ? '#93c5fd' : tone === 'amber' ? '#fcd34d' : '#86efac';
-  return (
-    <div className="absolute" style={{ left: p.x, top: p.y }}>
-      <div
-        className="absolute border-2 border-black/60"
-        style={{
-          width: w * TILE_W,
-          height: h * TILE_H,
-          transform: 'translate(-50%, -50%)',
-          background: `${color}66`,
-          clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
-        }}
-      />
-      <div className="absolute -top-4 left-0 text-[10px] font-bold text-zinc-800 bg-white/80 px-1 rounded">{label}</div>
-    </div>
-  );
-}
-
-function IsoDesk({ gx, gy }: { gx: number; gy: number }) {
-  const p = project(gx, gy);
-  return (
-    <div className="absolute" style={{ left: p.x, top: p.y, transform: 'translate(-50%, -50%)' }}>
-      <div className="w-7 h-4 border border-black bg-[#d1d8e2]" style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)' }} />
-      <div className="w-2 h-1 bg-[#7ea3cc] border border-black absolute left-2.5 top-1.5" />
-    </div>
-  );
-}
-
-function IsoSofa({ gx, gy }: { gx: number; gy: number }) {
-  const p = project(gx, gy);
-  return (
-    <div className="absolute" style={{ left: p.x, top: p.y, transform: 'translate(-50%, -50%)' }}>
-      <div className="w-9 h-5 border border-black bg-[#fbbf24]" style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)' }} />
-    </div>
-  );
-}
-
-function IsoPlant({ gx, gy }: { gx: number; gy: number }) {
-  const p = project(gx, gy);
-  return (
-    <div className="absolute" style={{ left: p.x, top: p.y, transform: 'translate(-50%, -50%)' }}>
-      <div className="w-4 h-3 border border-black bg-[#22c55e]" style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)' }} />
-    </div>
-  );
-}
-
-function IsoAvatar({ member, onClick }: { member: PositionedMember; onClick: () => void }) {
-  const p = project(member.gx, member.gy);
+function Avatar({ member, onClick }: { member: PositionedMember; onClick: () => void }) {
   const status = member.live?.status ?? 'idle';
   const animation = status === 'working' ? 'floatWork 1.1s ease-in-out infinite' : status === 'idle' ? 'floatIdle 2.8s ease-in-out infinite' : undefined;
 
@@ -256,7 +199,7 @@ function IsoAvatar({ member, onClick }: { member: PositionedMember; onClick: () 
     <motion.button
       onClick={onClick}
       className="absolute group"
-      animate={{ left: p.x, top: p.y - 18 }}
+      animate={{ left: member.x, top: member.y }}
       transition={{ duration: 0.55, ease: 'easeInOut' }}
       style={{ transform: 'translate(-50%, -50%)', animation }}
     >
