@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "guard:contrast": "node scripts/contrast-guard.mjs",
+    "lint": "eslint && npm run guard:contrast"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.95.3",
