@@ -78,7 +78,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             </button>
           </header>
 
-          <main className="flex-1 overflow-y-auto">
+          <main className="flex-1 overflow-y-auto bg-[#121212]">
             {children}
           </main>
         </div>

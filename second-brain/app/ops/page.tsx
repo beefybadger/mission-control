@@ -121,7 +121,7 @@ export default function OpsPage() {
         <Stat label="Failed Events" value={summary.failed} danger={summary.failed > 0} />
       </section>
 
-      <section className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-4 mb-6">
+      <section className="pixel-card p-4 mb-6">
         <div className="flex flex-wrap items-center gap-2">
           <Filter className="w-4 h-4 text-slate-500" />
           <FilterButton active={type === 'all'} onClick={() => { setType('all'); loadLogs('all', todayOnly); }} label="All" />
@@ -153,7 +153,7 @@ export default function OpsPage() {
         </div>
       </section>
 
-      <section className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-4">
+      <section className="pixel-card p-4">
         {loading ? (
           <p className="text-sm text-slate-500">Loading logs...</p>
         ) : rows.length === 0 ? (

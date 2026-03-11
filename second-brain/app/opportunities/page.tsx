@@ -90,7 +90,7 @@ export default function OpportunitiesPage() {
 
       <div className="space-y-4">
         {ranked.map((opp) => (
-          <div key={opp.id} className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-5">
+          <div key={opp.id} className="pixel-card p-5">
             <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-4">
               <div>
                 <p className="text-xs text-slate-500 uppercase tracking-widest mb-2">{opp.category.replace('-', ' ')}</p>
@@ -124,14 +124,14 @@ export default function OpportunitiesPage() {
                 <button
                   onClick={() => moveToOfferPipeline(opp)}
                   disabled={pipelining === opp.id}
-                  className="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 disabled:opacity-60 text-sm font-semibold text-white"
+                  className="pixel-btn px-4 py-2 text-sm"
                 >
                   {pipelining === opp.id ? 'Moving...' : 'Move to Offer Sprint'}
                 </button>
                 <button
                   onClick={() => pushToKanban(opp)}
                   disabled={creating === opp.id}
-                  className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-sm font-semibold text-white"
+                  className="pixel-btn px-4 py-2 text-sm"
                 >
                   {creating === opp.id ? 'Pushing...' : 'Push to Kanban'}
                 </button>

@@ -79,7 +79,7 @@ export default function CronPage() {
         </div>
         <button
           onClick={fetchJobs}
-          className="flex items-center gap-2 bg-white/5 hover:bg-blue-600 text-white text-[11px] font-bold uppercase tracking-widest px-4 py-3 rounded-xl transition-all"
+          className="pixel-btn flex items-center gap-2 text-[11px] uppercase tracking-widest px-4 py-3"
         >
           <RefreshCw className="w-3.5 h-3.5" /> Refresh
         </button>
@@ -97,21 +97,21 @@ export default function CronPage() {
           <button
             onClick={() => applyAction('installRevenueOps')}
             disabled={saving}
-            className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 text-sm font-semibold text-white"
+            className="pixel-btn px-4 py-2 text-sm"
           >
             {saving ? 'Applying...' : 'Install Revenue Automations'}
           </button>
           <button
             onClick={() => applyAction('runRevenueTop3Now')}
             disabled={saving}
-            className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-sm font-semibold text-white"
+            className="pixel-btn px-4 py-2 text-sm"
           >
             Run Daily Top 3 Now
           </button>
           <button
             onClick={() => applyAction('removeRevenueOps')}
             disabled={saving}
-            className="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-60 text-sm font-semibold text-slate-200"
+            className="pixel-btn px-4 py-2 text-sm"
           >
             Remove Revenue Automations
           </button>

@@ -146,7 +146,7 @@ export default function MissionControlDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
-        <section className="lg:col-span-2 bg-[#0a0a0a] border border-white/5 rounded-2xl p-6">
+        <section className="lg:col-span-2 pixel-card p-6">
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-sm font-bold text-white uppercase tracking-widest">Top 3 Revenue Actions</h2>
             <Link href="/opportunities" className="text-xs text-blue-400 hover:text-blue-300">Open Opportunity Radar</Link>
@@ -164,7 +164,7 @@ export default function MissionControlDashboard() {
           </p>
         </section>
 
-        <section className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-6">
+        <section className="pixel-card p-6">
           <h2 className="text-sm font-bold text-white uppercase tracking-widest mb-4">Stale Deal Alerts</h2>
           {staleDeals.length === 0 ? (
             <p className="text-sm text-slate-500">No stale deals detected.</p>
@@ -184,7 +184,7 @@ export default function MissionControlDashboard() {
         </section>
       </div>
 
-      <section className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-6 mb-10">
+      <section className="pixel-card p-6 mb-10">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-sm font-bold text-white uppercase tracking-widest">Operational Briefing</h2>
           <button onClick={fetchBriefing} className="text-xs text-blue-300 hover:text-blue-200 flex items-center gap-1">
@@ -217,7 +217,7 @@ export default function MissionControlDashboard() {
         )}
       </section>
 
-      <section className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-6 mb-10">
+      <section className="pixel-card p-6 mb-10">
         <h2 className="text-sm font-bold text-white uppercase tracking-widest mb-4">Mission-Critical Control Loop</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3">
           {loopStages.map((stage, idx) => (
@@ -235,7 +235,7 @@ export default function MissionControlDashboard() {
         </div>
       </section>
 
-      <section className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-6">
+      <section className="pixel-card p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-sm font-bold text-white uppercase tracking-widest">Opportunity Radar Snapshot</h2>
           <Radar className="w-4 h-4 text-emerald-400" />
@@ -266,7 +266,7 @@ export default function MissionControlDashboard() {
 
 function MetricCard({ label, value, icon, emphasis = false }: { label: string; value: number; icon: React.ReactNode; emphasis?: boolean }) {
   return (
-    <div className={`bg-[#0a0a0a] border rounded-2xl p-4 ${emphasis ? 'border-rose-500/20' : 'border-white/5'}`}>
+    <div className={`pixel-card p-4 ${emphasis ? 'ring-2 ring-rose-500/40' : ''}`}>
       <div className="flex items-center gap-2 mb-2">
         {icon}
         <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{label}</span>
@@ -281,7 +281,7 @@ function ScoreAction({ label, onClick, busy }: { label: string; onClick: () => v
     <button
       onClick={onClick}
       disabled={busy}
-      className="px-3 py-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] disabled:opacity-50 text-xs font-semibold text-slate-200"
+      className="pixel-btn px-3 py-1.5 disabled:opacity-50 text-xs"
     >
       {busy ? 'Saving...' : label}
     </button>
