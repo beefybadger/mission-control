@@ -61,12 +61,12 @@ body {
 .pixel-btn:hover { transform: translate(-1px, -1px); }
 .pixel-btn:disabled { opacity: 0.6; box-shadow: none; transform: none; }
 
-/* Contrast tuning for dark workspace */
-.workspace-dark .text-slate-300 { color: #dbe3ee; }
-.workspace-dark .text-slate-400 { color: #b7c3d2; }
-.workspace-dark .text-slate-500 { color: #91a1b8; }
-.workspace-dark .text-slate-600 { color: #7f8ea4; }
-.workspace-dark .text-white { color: #f8fbff; }
+/* Contrast tuning only inside dark cards */
+.workspace-dark .pixel-card .text-slate-300 { color: #dbe3ee; }
+.workspace-dark .pixel-card .text-slate-400 { color: #b7c3d2; }
+.workspace-dark .pixel-card .text-slate-500 { color: #91a1b8; }
+.workspace-dark .pixel-card .text-slate-600 { color: #7f8ea4; }
+.workspace-dark .pixel-card .text-white { color: #f8fbff; }
 
 /* Legacy utility aliases used across existing components */
 .wire-panel {

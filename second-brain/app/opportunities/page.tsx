@@ -112,7 +112,7 @@ export default function OpportunitiesPage() {
 
             <div className="pixel-card-light p-4 mb-4">
               <p className="text-[11px] text-slate-500 uppercase tracking-widest mb-1">Proof Signal</p>
-              <p className="text-sm text-slate-300">{opp.proofSignal}</p>
+              <p className="text-sm text-zinc-800">{opp.proofSignal}</p>
             </div>
 
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-blue-500/5 border border-blue-500/20 rounded-xl p-4">
