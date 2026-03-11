@@ -81,8 +81,8 @@ export default function CouncilPage() {
   return (
     <div className="max-w-6xl mx-auto pb-20">
       <header className="mb-16">
-        <h2 className="text-4xl font-black tracking-tighter text-white mb-4 italic underline decoration-blue-500/30 text-shadow">Council Hierarchy</h2>
-        <p className="text-slate-400 text-lg font-medium leading-relaxed max-w-2xl">
+        <h2 className="text-3xl font-black tracking-tight text-white mb-3">Council Hierarchy</h2>
+        <p className="text-slate-400 text-sm leading-relaxed max-w-2xl">
           The specialized task force driving your business automation.
           Managed by Baron, fueled by Intelligence and Creativity.
         </p>

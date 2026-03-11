@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Plus, CheckCircle2, Circle, Inbox, MoreHorizontal } from 'lucide-react';
+import { Plus, CheckCircle2, Circle, Inbox } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import type { Task } from '@/types';
@@ -11,7 +11,7 @@ export default function TaskForce() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTask, setNewTask] = useState('');
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
 
   useEffect(() => {
     async function loadTasks() {
@@ -50,147 +50,112 @@ export default function TaskForce() {
       .eq('id', id);
 
     if (!error) {
-      setTasks(tasks.map(t => t.id === id ? { ...t, status: newStatus } : t));
+      setTasks(tasks.map((t) => (t.id === id ? { ...t, status: newStatus } : t)));
     }
   }
 
-  const filteredTasks = tasks.filter(t => {
+  const filteredTasks = tasks.filter((t) => {
     if (filter === 'active') return t.status === 'pending';
     if (filter === 'completed') return t.status === 'completed';
     return true;
   });
 
   return (
-    <div className="p-6 md:p-10 max-w-5xl mx-auto min-h-full flex flex-col">
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Deployment</span>
-          </div>
-          <h1 className="text-3xl font-bold tracking-tight text-white">Task Force</h1>
-          <p className="text-[13px] text-slate-500 font-medium">Directives and execution tracking for the current mission.</p>
+    <div className="p-8 max-w-6xl mx-auto min-h-full">
+      <header className="flex flex-col md:flex-row md:items-end justify-between gap-5 mb-8">
+        <div>
+          <h1 className="text-3xl font-black tracking-tight text-white">Task Force</h1>
+          <p className="text-sm text-slate-400 mt-1">Practical execution queue for daily revenue actions.</p>
         </div>
 
-        <div className="flex items-center gap-2 bg-white/[0.03] p-1 rounded-lg border border-white/5">
+        <div className="wire-soft p-1 flex items-center gap-1">
           <FilterButton active={filter === 'all'} label="All" onClick={() => setFilter('all')} count={tasks.length} />
-          <FilterButton active={filter === 'active'} label="Active" onClick={() => setFilter('active')} count={tasks.filter(t => t.status === 'pending').length} />
-          <FilterButton active={filter === 'completed'} label="Done" onClick={() => setFilter('completed')} count={tasks.filter(t => t.status === 'completed').length} />
+          <FilterButton active={filter === 'active'} label="Active" onClick={() => setFilter('active')} count={tasks.filter((t) => t.status === 'pending').length} />
+          <FilterButton active={filter === 'completed'} label="Done" onClick={() => setFilter('completed')} count={tasks.filter((t) => t.status === 'completed').length} />
         </div>
       </header>
 
-      <form onSubmit={addTask} className="relative mb-10 group">
-        <div className="absolute inset-0 bg-blue-600/5 blur-xl group-focus-within:bg-blue-600/10 transition-all rounded-2xl" />
-        <div className="relative flex items-center bg-[#0c0c0c] border border-white/10 group-focus-within:border-blue-500/30 rounded-xl transition-all shadow-lg overflow-hidden">
-          <div className="pl-5 text-slate-500 group-focus-within:text-blue-500 transition-colors">
-            <Plus size={20} />
-          </div>
-          <input
-            type="text"
-            placeholder="Add objective to backlog..."
-            className="flex-1 bg-transparent border-none py-5 px-4 text-[15px] text-white focus:outline-none placeholder:text-slate-600"
-            value={newTask}
-            onChange={(e) => setNewTask(e.target.value)}
-          />
-          <div className="pr-4">
-            <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-white/[0.05] border border-white/5 text-[10px] font-bold text-slate-500">
-              RETURN
-            </div>
-          </div>
+      <form onSubmit={addTask} className="wire-panel p-2 mb-8 flex items-center gap-2">
+        <div className="w-9 h-9 rounded-lg border-2 border-black bg-yellow-300 flex items-center justify-center">
+          <Plus className="w-4 h-4 text-black" />
         </div>
+        <input
+          type="text"
+          placeholder="Add objective to backlog..."
+          className="flex-1 bg-transparent border-none px-2 py-2 text-[14px] text-black focus:outline-none placeholder:text-zinc-500"
+          value={newTask}
+          onChange={(e) => setNewTask(e.target.value)}
+        />
+        <button type="submit" className="pixel-btn px-4 py-2 text-sm">Add</button>
       </form>
 
-      <div className="flex-1 space-y-1">
-        {loading ? (
+      {loading ? (
+        <div className="space-y-2">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="h-16 w-full pixel-card-light animate-pulse" />
+          ))}
+        </div>
+      ) : filteredTasks.length === 0 ? (
+        <div className="wire-panel flex flex-col items-center justify-center py-20 text-zinc-600">
+          <Inbox className="w-10 h-10 mb-3 opacity-40" />
+          <p className="text-sm font-semibold">No tasks in this filter.</p>
+        </div>
+      ) : (
+        <AnimatePresence mode="popLayout">
           <div className="space-y-2">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-16 w-full bg-white/5 rounded-xl animate-pulse" />
-            ))}
-          </div>
-        ) : filteredTasks.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 bg-white/[0.01] border border-dashed border-white/5 rounded-2xl text-slate-600">
-            <Inbox className="w-12 h-12 mb-4 opacity-20" />
-            <p className="text-sm font-medium">No missions matching current criteria.</p>
-          </div>
-        ) : (
-          <AnimatePresence mode="popLayout">
             {filteredTasks.map((task) => (
               <motion.div
                 layout
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.98 }}
                 key={task.id}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
                 className={cn(
-                  "group flex items-center gap-4 p-4 rounded-xl border transition-all duration-200",
-                  task.status === 'completed'
-                    ? 'bg-transparent border-transparent opacity-40 hover:opacity-60'
-                    : 'bg-[#0c0c0c] border-white/5 hover:border-white/10 hover:bg-[#111]'
+                  'pixel-card-light flex items-center gap-4 p-4 transition-all',
+                  task.status === 'completed' && 'opacity-60'
                 )}
               >
-                <button
-                  onClick={() => toggleTask(task.id, task.status)}
-                  className="relative flex items-center justify-center"
-                >
+                <button onClick={() => toggleTask(task.id, task.status)}>
                   {task.status === 'completed' ? (
-                    <div className="bg-emerald-500/20 rounded-full p-0.5">
-                      <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                    </div>
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600" />
                   ) : (
-                    <Circle className="w-6 h-6 text-slate-700 group-hover:text-blue-500 transition-colors" />
+                    <Circle className="w-5 h-5 text-zinc-500" />
                   )}
                 </button>
 
-                <div className="flex-1 flex flex-col gap-0.5">
-                  <span className={cn(
-                    "text-[14px] font-medium transition-all",
-                    task.status === 'completed' ? 'line-through text-slate-600' : 'text-slate-200'
-                  )}>
+                <div className="flex-1">
+                  <p className={cn('text-sm font-semibold', task.status === 'completed' ? 'line-through text-zinc-500' : 'text-zinc-900')}>
                     {task.title}
-                  </span>
-                  <div className="flex items-center gap-3">
-                    <span className="text-[9px] font-bold text-slate-700 uppercase tracking-widest">Added {new Date(task.created_at).toLocaleDateString()}</span>
-                  </div>
+                  </p>
+                  <p className="text-[11px] text-zinc-500">Added {new Date(task.created_at).toLocaleDateString()}</p>
                 </div>
 
-                <div className="flex items-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div className={cn(
-                    "px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider",
-                    task.priority === 'high' ? "bg-red-500/10 text-red-500 border border-red-500/20" : "bg-slate-800 text-slate-500"
-                  )}>
-                    {task.priority}
-                  </div>
-                  <button className="text-slate-700 hover:text-white transition-colors">
-                    <MoreHorizontal size={16} />
-                  </button>
-                </div>
+                <span className={cn(
+                  'px-2 py-1 rounded-md text-[10px] border-2 font-bold uppercase',
+                  task.priority === 'high' ? 'text-rose-700 border-rose-600 bg-rose-100' : 'text-zinc-700 border-zinc-700 bg-zinc-100'
+                )}>
+                  {task.priority}
+                </span>
               </motion.div>
             ))}
-          </AnimatePresence>
-        )}
-      </div>
+          </div>
+        </AnimatePresence>
+      )}
     </div>
   );
 }
 
-function FilterButton({ active, label, onClick, count }: { active: boolean, label: string, onClick: () => void, count: number }) {
+function FilterButton({ active, label, onClick, count }: { active: boolean; label: string; onClick: () => void; count: number }) {
   return (
     <button
       onClick={onClick}
       className={cn(
-        "flex items-center gap-2 px-3 py-1.5 rounded-md text-[11px] font-bold transition-all",
-        active
-          ? "bg-white/[0.05] text-white shadow-sm"
-          : "text-slate-500 hover:text-slate-300"
+        'px-3 py-1.5 rounded-md text-[11px] font-bold border-2 flex items-center gap-1.5',
+        active ? 'bg-yellow-300 text-black border-black' : 'bg-white text-black border-black'
       )}
     >
       {label}
-      <span className={cn(
-        "px-1.5 py-0.5 rounded-full text-[9px] transition-colors",
-        active ? "bg-blue-500/20 text-blue-400" : "bg-white/[0.03] text-slate-600"
-      )}>
-        {count}
-      </span>
+      <span className="text-[9px]">{count}</span>
     </button>
-  )
+  );
 }

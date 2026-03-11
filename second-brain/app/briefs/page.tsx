@@ -27,8 +27,8 @@ export default function BriefsPage() {
   return (
     <div className="p-8 max-w-5xl mx-auto">
       <header className="mb-12">
-        <h2 className="text-4xl font-black tracking-tighter text-white mb-4 italic underline decoration-blue-500/30 text-shadow">Daily Briefs</h2>
-        <p className="text-slate-400 text-lg font-medium leading-relaxed max-w-2xl">
+        <h2 className="text-3xl font-black tracking-tight text-white mb-3">Daily Briefs</h2>
+        <p className="text-slate-400 text-sm leading-relaxed max-w-2xl">
           Aggregated intelligence and status updates from Baron&apos;s daily operations.
         </p>
       </header>
