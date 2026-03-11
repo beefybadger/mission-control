@@ -33,9 +33,9 @@ export default function ExplorerPage() {
         </p>
       </header>
 
-      <div className="flex gap-6 h-[500px]">
+      <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 h-auto lg:h-[500px]">
         {/* File List */}
-        <div className="w-80 flex-shrink-0 pixel-card overflow-y-auto">
+        <div className="w-full lg:w-80 flex-shrink-0 pixel-card overflow-y-auto max-h-64 lg:max-h-none">
           {loading ? (
             <div className="p-6 text-sm text-slate-600">Loading...</div>
           ) : (
@@ -55,7 +55,7 @@ export default function ExplorerPage() {
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 pixel-card overflow-y-auto p-6">
+        <div className="flex-1 pixel-card overflow-y-auto p-4 md:p-6 min-h-[320px]">
           {selected ? (
             <>
               <div className="flex items-center gap-2 mb-6 pb-4 border-b border-white/5">
