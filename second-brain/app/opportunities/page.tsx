@@ -8,6 +8,8 @@ import type { MarketScout, Opportunity, RevenueBridge, TechnicalPain } from '@/t
 
 export default function OpportunitiesPage() {
   const [creating, setCreating] = useState<string | null>(null);
+  const [pipelining, setPipelining] = useState<string | null>(null);
+  const [notice, setNotice] = useState('');
   const [opportunities, setOpportunities] = useState<Opportunity[]>(opportunitySeed);
 
   useEffect(() => {
@@ -31,11 +33,44 @@ export default function OpportunitiesPage() {
 
   async function pushToKanban(opp: Opportunity) {
     setCreating(opp.id);
+    setNotice('');
     const title = `[Opportunity] ${opp.title} — Next money action: ${opp.nextMoneyAction}`;
     await supabase
       .from('tasks')
       .insert([{ title, status: 'pending', priority: opp.timeToCash <= 2 ? 'high' : 'medium' }]);
+    setNotice('Pushed to Task Force.');
     setCreating(null);
+  }
+
+  async function moveToOfferPipeline(opp: Opportunity) {
+    setPipelining(opp.id);
+    setNotice('');
+
+    try {
+      const response = await fetch('/api/pipeline/opportunity-to-offer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          opportunityId: opp.id,
+          title: opp.title,
+          category: opp.category,
+          nextMoneyAction: opp.nextMoneyAction,
+          proofSignal: opp.proofSignal,
+        }),
+      });
+
+      const payload = await response.json();
+      if (!response.ok) {
+        setNotice(payload?.error ?? 'Failed to transition opportunity.');
+      } else {
+        setNotice('Opportunity moved into Offer Sprint + execution task created.');
+      }
+    } catch (error) {
+      console.error(error);
+      setNotice('Failed to transition opportunity.');
+    }
+
+    setPipelining(null);
   }
 
   return (
@@ -50,6 +85,8 @@ export default function OpportunitiesPage() {
           Live opportunities derived from technical pains, market scout signals, and revenue bridge assets.
         </p>
       </header>
+
+      {notice && <p className="text-xs text-blue-300 mb-4">{notice}</p>}
 
       <div className="space-y-4">
         {ranked.map((opp) => (
@@ -83,13 +120,22 @@ export default function OpportunitiesPage() {
                 <p className="text-[11px] text-blue-300 uppercase tracking-widest mb-1">Strict Next Money Action</p>
                 <p className="text-sm text-blue-100">{opp.nextMoneyAction}</p>
               </div>
-              <button
-                onClick={() => pushToKanban(opp)}
-                disabled={creating === opp.id}
-                className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-sm font-semibold text-white"
-              >
-                {creating === opp.id ? 'Pushing...' : 'Push to Kanban'}
-              </button>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => moveToOfferPipeline(opp)}
+                  disabled={pipelining === opp.id}
+                  className="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 disabled:opacity-60 text-sm font-semibold text-white"
+                >
+                  {pipelining === opp.id ? 'Moving...' : 'Move to Offer Sprint'}
+                </button>
+                <button
+                  onClick={() => pushToKanban(opp)}
+                  disabled={creating === opp.id}
+                  className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-sm font-semibold text-white"
+                >
+                  {creating === opp.id ? 'Pushing...' : 'Push to Kanban'}
+                </button>
+              </div>
             </div>
           </div>
         ))}

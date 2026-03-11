@@ -38,6 +38,19 @@ export interface FreedomMetrics {
   daysRemaining: number;
 }
 
+export interface FreedomMetricsResponse extends FreedomMetrics {
+  periodStart: string;
+  periodEnd: string;
+}
+
+export interface DailyBriefing {
+  date: string;
+  summary: string;
+  metrics: FreedomMetrics;
+  topActions: string[];
+  staleTasks: string[];
+}
+
 export interface OfferTemplate {
   id: string;
   title: string;

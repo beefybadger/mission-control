@@ -3,17 +3,52 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { getMemories, getTasks } from './actions';
-import { DollarSign, Target, MessageSquare, Handshake, Radar, ArrowRight, Timer, AlertTriangle } from 'lucide-react';
-import type { Memory, Opportunity, Task, MarketScout, RevenueBridge, TechnicalPain } from '@/types';
-import { buildFreedomMetrics, deriveOpportunitiesFromSchema, opportunitySeed, rankOpportunities, scoreOpportunity, topRevenueActions } from '@/lib/revenue';
+import { DollarSign, Target, MessageSquare, Handshake, Radar, ArrowRight, Timer, AlertTriangle, RefreshCw } from 'lucide-react';
+import type {
+  DailyBriefing,
+  FreedomMetricsResponse,
+  MarketScout,
+  Memory,
+  Opportunity,
+  RevenueBridge,
+  Task,
+  TechnicalPain,
+} from '@/types';
+import { deriveOpportunitiesFromSchema, opportunitySeed, rankOpportunities, scoreOpportunity, topRevenueActions } from '@/lib/revenue';
 import { supabase } from '@/lib/supabase';
+
+const EMPTY_METRICS: FreedomMetricsResponse = {
+  leadsGenerated: 0,
+  offersSent: 0,
+  conversationsActive: 0,
+  cashClosed: 0,
+  daysRemaining: 0,
+  periodStart: '',
+  periodEnd: '',
+};
 
 export default function MissionControlDashboard() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [memories, setMemories] = useState<Memory[]>([]);
   const [opportunities, setOpportunities] = useState<Opportunity[]>(opportunitySeed);
+  const [freedom, setFreedom] = useState<FreedomMetricsResponse>(EMPTY_METRICS);
+  const [briefing, setBriefing] = useState<DailyBriefing | null>(null);
   const [loading, setLoading] = useState(true);
   const [snapshotNow] = useState(() => Date.now());
+  const [tracking, setTracking] = useState<string>('');
+  const [briefingNotice, setBriefingNotice] = useState('');
+
+  async function fetchFreedomMetrics() {
+    const res = await fetch('/api/freedom/metrics');
+    const data = await res.json();
+    if (res.ok) setFreedom(data as FreedomMetricsResponse);
+  }
+
+  async function fetchBriefing() {
+    const res = await fetch('/api/briefing/daily');
+    const data = await res.json();
+    if (res.ok) setBriefing(data as DailyBriefing);
+  }
 
   useEffect(() => {
     async function init() {
@@ -32,13 +67,13 @@ export default function MissionControlDashboard() {
       const scout = (scoutRes.data ?? []) as MarketScout[];
       setOpportunities(deriveOpportunitiesFromSchema(pains, bridges, scout));
 
+      await Promise.all([fetchFreedomMetrics(), fetchBriefing()]);
       setLoading(false);
     }
     init();
   }, []);
 
   const rankedOpportunities = useMemo(() => rankOpportunities(opportunities), [opportunities]);
-  const freedom = useMemo(() => buildFreedomMetrics(tasks, memories), [tasks, memories]);
   const actionList = useMemo(() => topRevenueActions(rankedOpportunities, 3), [rankedOpportunities]);
 
   const staleDeals = useMemo(() => tasks.filter((task) => {
@@ -51,9 +86,40 @@ export default function MissionControlDashboard() {
     { name: 'Opportunity', count: rankedOpportunities.length, href: '/opportunities' },
     { name: 'Offer', count: tasks.filter((t) => /offer|proposal|script/i.test(t.title)).length, href: '/offers' },
     { name: 'Task', count: tasks.length, href: '/tasks' },
-    { name: 'Outcome', count: memories.filter((m) => /closed|won|paid|cash/i.test(m.content)).length, href: '/memory' },
+    { name: 'Outcome', count: freedom.cashClosed, href: '/briefs' },
     { name: 'Memory Update', count: memories.filter((m) => /lesson|insight|update/i.test(m.content)).length, href: '/memory' },
   ];
+
+  async function trackMetric(metricType: 'lead' | 'offer' | 'conversation' | 'cash') {
+    setTracking(metricType);
+    await fetch('/api/freedom/metrics', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ metricType, value: 1 }),
+    });
+    await fetchFreedomMetrics();
+    setTracking('');
+  }
+
+  async function saveBriefing() {
+    if (!briefing) return;
+
+    const content = [
+      `Ops Briefing ${briefing.date}`,
+      `Summary: ${briefing.summary}`,
+      `Metrics: leads=${briefing.metrics.leadsGenerated}, offers=${briefing.metrics.offersSent}, conversations=${briefing.metrics.conversationsActive}, cash=${briefing.metrics.cashClosed}, daysRemaining=${briefing.metrics.daysRemaining}`,
+      `Top actions:\n- ${briefing.topActions.join('\n- ')}`,
+      `Stale tasks:\n- ${briefing.staleTasks.join('\n- ') || 'None'}`,
+    ].join('\n\n');
+
+    const res = await fetch('/api/briefing/daily', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content }),
+    });
+
+    setBriefingNotice(res.ok ? 'Briefing saved to database.' : 'Failed to save briefing.');
+  }
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
@@ -64,12 +130,19 @@ export default function MissionControlDashboard() {
         </p>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-10">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
         <MetricCard label="Leads Generated" value={freedom.leadsGenerated} icon={<Target className="w-4 h-4 text-blue-400" />} />
         <MetricCard label="Offers Sent" value={freedom.offersSent} icon={<Handshake className="w-4 h-4 text-purple-400" />} />
         <MetricCard label="Conversations Active" value={freedom.conversationsActive} icon={<MessageSquare className="w-4 h-4 text-amber-400" />} />
         <MetricCard label="Cash Closed" value={freedom.cashClosed} icon={<DollarSign className="w-4 h-4 text-emerald-400" />} />
         <MetricCard label="Days to Checkpoint" value={freedom.daysRemaining} icon={<Timer className="w-4 h-4 text-rose-400" />} emphasis />
+      </div>
+
+      <div className="flex flex-wrap gap-2 mb-10">
+        <ScoreAction label="+ Lead" busy={tracking === 'lead'} onClick={() => trackMetric('lead')} />
+        <ScoreAction label="+ Offer" busy={tracking === 'offer'} onClick={() => trackMetric('offer')} />
+        <ScoreAction label="+ Conversation" busy={tracking === 'conversation'} onClick={() => trackMetric('conversation')} />
+        <ScoreAction label="+ Cash Close" busy={tracking === 'cash'} onClick={() => trackMetric('cash')} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
@@ -110,6 +183,39 @@ export default function MissionControlDashboard() {
           )}
         </section>
       </div>
+
+      <section className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-6 mb-10">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-bold text-white uppercase tracking-widest">Operational Briefing</h2>
+          <button onClick={fetchBriefing} className="text-xs text-blue-300 hover:text-blue-200 flex items-center gap-1">
+            <RefreshCw className="w-3 h-3" /> Refresh
+          </button>
+        </div>
+
+        {loading || !briefing ? (
+          <p className="text-sm text-slate-500">Generating briefing...</p>
+        ) : (
+          <div className="space-y-4">
+            <p className="text-sm text-slate-200">{briefing.summary}</p>
+            <div>
+              <p className="text-[11px] uppercase tracking-widest text-slate-500 mb-1">Top Actions</p>
+              <ul className="space-y-1 text-sm text-slate-300">
+                {briefing.topActions.map((action, idx) => <li key={idx}>- {action}</li>)}
+              </ul>
+            </div>
+            <div>
+              <p className="text-[11px] uppercase tracking-widest text-slate-500 mb-1">Stale Tasks</p>
+              <ul className="space-y-1 text-sm text-slate-300">
+                {(briefing.staleTasks.length > 0 ? briefing.staleTasks : ['None']).map((task, idx) => <li key={idx}>- {task}</li>)}
+              </ul>
+            </div>
+            <button onClick={saveBriefing} className="px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-sm font-semibold text-white">
+              Save Briefing Snapshot
+            </button>
+            {briefingNotice && <p className="text-xs text-blue-300">{briefingNotice}</p>}
+          </div>
+        )}
+      </section>
 
       <section className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-6 mb-10">
         <h2 className="text-sm font-bold text-white uppercase tracking-widest mb-4">Mission-Critical Control Loop</h2>
@@ -167,5 +273,17 @@ function MetricCard({ label, value, icon, emphasis = false }: { label: string; v
       </div>
       <div className="text-2xl font-black text-white">{value}</div>
     </div>
+  );
+}
+
+function ScoreAction({ label, onClick, busy }: { label: string; onClick: () => void; busy: boolean }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={busy}
+      className="px-3 py-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] disabled:opacity-50 text-xs font-semibold text-slate-200"
+    >
+      {busy ? 'Saving...' : label}
+    </button>
   );
 }
