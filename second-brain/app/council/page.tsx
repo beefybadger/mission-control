@@ -1,18 +1,18 @@
 'use client';
 
-import { useState } from 'react';
-import { Brain, MessageSquare, ShieldCheck, Zap, Sparkles, Wrench, LineChart, Shield } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { RefreshCw, MessageSquare } from 'lucide-react';
 import ChatModal from '@/components/ChatModal';
-import { cn } from '@/lib/utils';
-import type { CouncilMember, AgentColor } from '@/types';
+import type { CouncilMember } from '@/types';
 
-const COLOR_MAP: Record<AgentColor, { iconBg: string; iconBorder: string; iconBorderHover: string }> = {
-  blue: { iconBg: 'bg-blue-500/5', iconBorder: 'border-blue-500/10', iconBorderHover: 'group-hover:border-blue-500/40' },
-  emerald: { iconBg: 'bg-emerald-500/5', iconBorder: 'border-emerald-500/10', iconBorderHover: 'group-hover:border-emerald-500/40' },
-  purple: { iconBg: 'bg-purple-500/5', iconBorder: 'border-purple-500/10', iconBorderHover: 'group-hover:border-purple-500/40' },
+type LiveState = {
+  id: string;
+  status: 'working' | 'idle' | 'offline';
+  lastActiveAt: string | null;
+  room: 'baron-office' | 'cubicles' | 'relax-room';
 };
 
-const COUNCIL_MEMBERS = [
+const COUNCIL_MEMBERS: CouncilMember[] = [
   {
     id: 'baron',
     name: 'Baron',
@@ -21,7 +21,7 @@ const COUNCIL_MEMBERS = [
     status: 'Active',
     description: 'Lead expert operator. Responsible for system architecture, strategic pivots, and project deployment.',
     capabilities: ['Architecture', 'Technical Deployment', 'Decision Engine'],
-    color: 'blue'
+    color: 'blue',
   },
   {
     id: 'scotty',
@@ -31,7 +31,7 @@ const COUNCIL_MEMBERS = [
     status: 'Standby',
     description: 'Deep-web researcher. Specialized in trend hunting, competitor auditing, and local lead scouting.',
     capabilities: ['Brave Search', 'Data Scraping', 'Market Audits'],
-    color: 'emerald'
+    color: 'emerald',
   },
   {
     id: 'maurice',
@@ -41,7 +41,7 @@ const COUNCIL_MEMBERS = [
     status: 'Standby',
     description: 'Revenue vibe architect. Responsible for offer crafting, marketing angles, and product design.',
     capabilities: ['Ideation', 'Offer Design', 'UX/UI Direction'],
-    color: 'purple'
+    color: 'purple',
   },
   {
     id: 'hacker',
@@ -51,7 +51,7 @@ const COUNCIL_MEMBERS = [
     status: 'Standby',
     description: 'Builds and maintains automation, scraping, and deployment infrastructure.',
     capabilities: ['Programming', 'DevOps', 'Automation'],
-    color: 'blue'
+    color: 'blue',
   },
   {
     id: 'oracle',
@@ -61,7 +61,7 @@ const COUNCIL_MEMBERS = [
     status: 'Standby',
     description: 'Interprets market data and patterns to optimize strategy and conversion.',
     capabilities: ['Data Science', 'Predictive Analytics', 'Modeling'],
-    color: 'emerald'
+    color: 'emerald',
   },
   {
     id: 'sentinel',
@@ -71,51 +71,89 @@ const COUNCIL_MEMBERS = [
     status: 'Standby',
     description: 'Guards uptime, security posture, and operational resilience.',
     capabilities: ['System Monitoring', 'Security', 'Incident Response'],
-    color: 'purple'
-  }
-] satisfies CouncilMember[];
+    color: 'purple',
+  },
+];
 
 export default function CouncilPage() {
   const [activeMember, setActiveMember] = useState<CouncilMember | null>(null);
+  const [states, setStates] = useState<LiveState[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  async function refreshStates() {
+    setLoading(true);
+    const res = await fetch('/api/council/status');
+    const data = await res.json();
+    if (res.ok) setStates((data.states ?? []) as LiveState[]);
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    async function loadInitial() {
+      setLoading(true);
+      const res = await fetch('/api/council/status');
+      const data = await res.json();
+      if (res.ok) setStates((data.states ?? []) as LiveState[]);
+      setLoading(false);
+    }
+
+    async function poll() {
+      const res = await fetch('/api/council/status');
+      const data = await res.json();
+      if (res.ok) setStates((data.states ?? []) as LiveState[]);
+    }
+
+    loadInitial();
+    const timer = setInterval(poll, 20000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const merged = useMemo(() => COUNCIL_MEMBERS.map((m) => ({
+    ...m,
+    live: states.find((s) => s.id === m.id),
+  })), [states]);
 
   return (
-    <div className="max-w-6xl mx-auto pb-20">
-      <header className="mb-16">
-        <h2 className="text-3xl font-black tracking-tight text-white mb-3">Council Hierarchy</h2>
-        <p className="text-slate-400 text-sm leading-relaxed max-w-2xl">
-          The specialized task force driving your business automation.
-          Managed by Baron, fueled by Intelligence and Creativity.
-        </p>
+    <div className="max-w-7xl mx-auto pb-16 p-6 md:p-8">
+      <header className="mb-8 flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-3xl font-black tracking-tight text-white mb-2">Council Office</h2>
+          <p className="text-slate-400 text-sm max-w-3xl">
+            Pixel office view with live movement by status: working agents stay in cubicles, idle agents move in the relax room. Baron has a private office.
+          </p>
+        </div>
+        <button onClick={refreshStates} className="pixel-btn px-3 py-1.5 text-xs flex items-center gap-1">
+          <RefreshCw className="w-3 h-3" /> {loading ? 'Syncing...' : 'Refresh'}
+        </button>
       </header>
 
-      {/* Hierarchy Visualization */}
-      <div className="space-y-12 relative">
-        {/* Connection Line */}
-        <div className="absolute left-[50%] top-20 bottom-20 w-px bg-gradient-to-b from-blue-500/50 via-slate-800 to-transparent hidden lg:block" />
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-8">
+        <OfficeRoom title="Baron Office" subtitle="Command" members={merged.filter((m) => m.id === 'baron')} room="baron-office" onMessage={setActiveMember} />
+        <OfficeRoom title="Cubicles" subtitle="Working" members={merged.filter((m) => m.id !== 'baron')} room="cubicles" onMessage={setActiveMember} />
+        <OfficeRoom title="Relax Room" subtitle="Idle" members={merged.filter((m) => m.id !== 'baron')} room="relax-room" onMessage={setActiveMember} />
+      </div>
 
-        {/* Tier 1: COMMAND */}
-        <section>
-          <div className="flex items-center gap-3 mb-8">
-            <ShieldCheck className="text-blue-500 w-5 h-5" />
-            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-[0.3em]">Command Level</h3>
-          </div>
-          <div className="flex justify-center">
-            <MemberCard member={COUNCIL_MEMBERS[0]} onMessage={() => setActiveMember(COUNCIL_MEMBERS[0])} isLead />
-          </div>
-        </section>
-
-        {/* Tier 2: EXECUTION */}
-        <section>
-          <div className="flex items-center gap-3 mb-8">
-            <Zap className="text-amber-500 w-5 h-5" />
-            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-[0.3em]">Execution & Support</h3>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-            {COUNCIL_MEMBERS.slice(1).map((member) => (
-              <MemberCard key={member.id} member={member} onMessage={() => setActiveMember(member)} />
-            ))}
-          </div>
-        </section>
+      <div className="pixel-card p-4">
+        <h3 className="text-sm font-bold text-white mb-3">Live Status</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+          {merged.map((member) => {
+            const status = member.live?.status ?? 'idle';
+            const tone = status === 'working' ? 'text-emerald-300' : status === 'offline' ? 'text-rose-300' : 'text-amber-200';
+            return (
+              <div key={member.id} className="pixel-card-light p-3">
+                <p className="text-sm font-bold text-zinc-900">{member.name}</p>
+                <p className="text-[11px] text-zinc-600">{member.role}</p>
+                <p className={`text-xs font-bold mt-2 uppercase ${tone}`}>{status}</p>
+                <p className="text-[11px] text-zinc-600 mt-1">
+                  {member.live?.lastActiveAt ? `Last active ${new Date(member.live.lastActiveAt).toLocaleTimeString()}` : 'No recent log'}
+                </p>
+                <button onClick={() => setActiveMember(member)} className="mt-2 pixel-btn px-2 py-1 text-[11px] flex items-center gap-1">
+                  <MessageSquare className="w-3 h-3" /> Message
+                </button>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       <ChatModal
@@ -127,61 +165,60 @@ export default function CouncilPage() {
   );
 }
 
-function MemberCard({ member, onMessage, isLead = false }: { member: CouncilMember, onMessage: () => void, isLead?: boolean }) {
-  const colors = COLOR_MAP[member.color];
+function OfficeRoom({
+  title,
+  subtitle,
+  members,
+  room,
+  onMessage,
+}: {
+  title: string;
+  subtitle: string;
+  members: (CouncilMember & { live?: LiveState })[];
+  room: LiveState['room'];
+  onMessage: (member: CouncilMember) => void;
+}) {
+  const displayed = members.filter((m) => (m.live?.room ?? (m.id === 'baron' ? 'baron-office' : 'relax-room')) === room);
+
   return (
-    <div className={cn(
-      "pixel-card rounded-[2rem] overflow-hidden group transition-all duration-500 hover:-translate-y-0.5 flex flex-col",
-      isLead ? "max-w-md w-full shadow-[0_0_50px_rgba(37,99,235,0.1)]" : "w-full"
-    )}>
-      <div className="p-8 flex-1">
-        <div className="flex justify-between items-start mb-10">
-          <div className={cn(
-            "w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-110",
-            colors.iconBg, `border ${colors.iconBorder}`, colors.iconBorderHover
-          )}>
-            {member.id === 'baron' && <Brain className="w-8 h-8 text-blue-500" />}
-            {member.id === 'scotty' && <ShieldCheck className="w-8 h-8 text-emerald-500" />}
-            {member.id === 'maurice' && <Sparkles className="w-8 h-8 text-purple-500" />}
-            {member.id === 'hacker' && <Wrench className="w-8 h-8 text-blue-500" />}
-            {member.id === 'oracle' && <LineChart className="w-8 h-8 text-emerald-500" />}
-            {member.id === 'sentinel' && <Shield className="w-8 h-8 text-purple-500" />}
-          </div>
-          <div className="text-right">
-            <span className="block text-[10px] font-black text-slate-600 uppercase tracking-widest mb-1">{member.level}</span>
-            <span className={cn(
-              "text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border",
-              member.status === 'Active' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-slate-500/10 text-slate-500 border-white/5'
-            )}>
-              {member.status}
-            </span>
-          </div>
-        </div>
-
-        <h3 className="text-3xl font-black text-white tracking-tighter mb-2 italic">{member.name}</h3>
-        <p className="text-[11px] font-bold text-blue-500 uppercase tracking-widest mb-6">{member.role}</p>
-
-        <p className="text-slate-400 text-sm leading-relaxed mb-10 font-medium">
-          {member.description}
-        </p>
-
-        <div className="flex flex-wrap gap-2">
-          {member.capabilities.map((cap: string) => (
-            <span key={cap} className="text-[10px] font-bold bg-white/5 text-slate-500 px-3 py-1.5 rounded-xl group-hover:text-slate-300 transition-colors">
-              {cap}
-            </span>
-          ))}
-        </div>
+    <section className="pixel-card p-4 min-h-[260px]">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-bold text-white">{title}</h3>
+        <span className="text-[10px] text-slate-400 uppercase tracking-widest">{subtitle}</span>
       </div>
+      <div className="relative h-[190px] wire-soft overflow-hidden">
+        <div className="absolute inset-0 opacity-25" style={{
+          backgroundImage:
+            'linear-gradient(to right, #000 1px, transparent 1px), linear-gradient(to bottom, #000 1px, transparent 1px)',
+          backgroundSize: '16px 16px',
+        }} />
 
-      <div className="p-4 bg-black/40 border-t border-white/5 flex gap-2">
-        <button
-          onClick={onMessage}
-          className="flex-1 bg-white/5 hover:bg-blue-600 text-white text-[11px] font-black uppercase tracking-widest py-4 rounded-2xl transition-all duration-300 flex items-center justify-center gap-3 group"
-        >
-          <MessageSquare className="w-4 h-4 transition-transform group-hover:scale-110" /> Initial Connection
-        </button>
+        {displayed.length === 0 && (
+          <div className="absolute inset-0 flex items-center justify-center text-[11px] text-zinc-600 font-semibold">No agents in this room.</div>
+        )}
+
+        {displayed.map((member, idx) => (
+          <button
+            key={member.id}
+            onClick={() => onMessage(member)}
+            className="absolute group"
+            style={{
+              left: `${12 + (idx % 3) * 28}%`,
+              top: `${22 + Math.floor(idx / 3) * 34}%`,
+              animation: member.live?.status === 'working'
+                ? 'floatWork 1.4s ease-in-out infinite'
+                : 'floatIdle 2.6s ease-in-out infinite',
+            }}
+          >
+            <div className="w-10 h-10 border-2 border-black rounded-sm bg-yellow-300 shadow-[2px_2px_0_#000] flex items-center justify-center text-[10px] font-black text-black">
+              {member.name.slice(0, 2).toUpperCase()}
+            </div>
+            <div className="mt-1 text-[10px] font-bold text-white bg-black/60 px-1.5 py-0.5 rounded">
+              {member.name}
+            </div>
+          </button>
+        ))}
       </div>
-    </div>
+    </section>
   );
 }
