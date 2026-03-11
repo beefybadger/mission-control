@@ -248,7 +248,7 @@ export default function MissionControlDashboard() {
             {rankedOpportunities.slice(0, 3).map((opp: Opportunity) => (
               <div key={opp.id} className="pixel-card-light p-4 flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-sm font-semibold text-slate-200">{opp.title}</p>
+                  <p className="text-sm font-semibold text-zinc-900">{opp.title}</p>
                   <p className="text-[11px] text-slate-500">{opp.source}</p>
                 </div>
                 <div className="text-right">

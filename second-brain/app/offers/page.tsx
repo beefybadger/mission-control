@@ -141,7 +141,7 @@ export default function OfferSprintPage() {
             ) : (
               <ul className="space-y-2">
                 {painSignals.map((signal, idx) => (
-                  <li key={idx} className="text-sm text-slate-300 pixel-card-light p-3">{signal}</li>
+                  <li key={idx} className="text-sm text-zinc-800 pixel-card-light p-3">{signal}</li>
                 ))}
               </ul>
             )}

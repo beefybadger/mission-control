@@ -68,6 +68,24 @@ body {
 .workspace-dark .pixel-card .text-slate-600 { color: #7f8ea4; }
 .workspace-dark .pixel-card .text-white { color: #f8fbff; }
 
+/* Force readable text inside light cards */
+.workspace-dark .pixel-card-light .text-slate-200,
+.workspace-dark .pixel-card-light .text-slate-300,
+.workspace-dark .pixel-card-light .text-slate-400,
+.workspace-dark .pixel-card-light .text-white {
+  color: #1f2937;
+}
+.workspace-dark .pixel-card-light .text-slate-500,
+.workspace-dark .pixel-card-light .text-slate-600 {
+  color: #4b5563;
+}
+
+/* Native select dropdown readability */
+select option {
+  color: #111;
+  background: #fff;
+}
+
 /* Legacy utility aliases used across existing components */
 .wire-panel {
   background: #ffffff;
