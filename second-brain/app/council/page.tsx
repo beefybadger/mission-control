@@ -12,6 +12,57 @@ type LiveState = {
   room: 'baron-office' | 'cubicles' | 'relax-room';
 };
 
+const SPRITES: Record<string, string[]> = {
+  baron: [
+    '..bbb.',
+    '.bwwb.',
+    '.bkkb.',
+    '.byyb.',
+    '.b..b.',
+    '..bb..',
+  ],
+  scotty: [
+    '..gg..',
+    '.gwwg.',
+    '.gkkg.',
+    '.gyyg.',
+    '.g..g.',
+    '..gg..',
+  ],
+  maurice: [
+    '..pp..',
+    '.pwwp.',
+    '.pkkp.',
+    '.pyyp.',
+    '.p..p.',
+    '..pp..',
+  ],
+  hacker: [
+    '..cc..',
+    '.cwwc.',
+    '.ckkc.',
+    '.cyyc.',
+    '.c..c.',
+    '..cc..',
+  ],
+  oracle: [
+    '..te..',
+    '.twwt.',
+    '.tkkt.',
+    '.tyyt.',
+    '.t..t.',
+    '..tt..',
+  ],
+  sentinel: [
+    '..rr..',
+    '.rwwr.',
+    '.rkkr.',
+    '.ryyr.',
+    '.r..r.',
+    '..rr..',
+  ],
+};
+
 const COUNCIL_MEMBERS: CouncilMember[] = [
   {
     id: 'baron',
@@ -165,6 +216,29 @@ export default function CouncilPage() {
   );
 }
 
+function PixelSprite({ id }: { id: string }) {
+  const rows = SPRITES[id] ?? SPRITES.baron;
+
+  return (
+    <div className="grid grid-cols-6 gap-[1px] p-[2px] bg-black">
+      {rows.join('').split('').map((ch, idx) => {
+        const color = ch === 'b' ? '#3b82f6'
+          : ch === 'g' ? '#10b981'
+          : ch === 'p' ? '#a855f7'
+          : ch === 'c' ? '#06b6d4'
+          : ch === 't' ? '#14b8a6'
+          : ch === 'r' ? '#f43f5e'
+          : ch === 'w' ? '#f8fafc'
+          : ch === 'k' ? '#111827'
+          : ch === 'y' ? '#facc15'
+          : 'transparent';
+
+        return <span key={idx} className="w-1.5 h-1.5" style={{ backgroundColor: color }} />;
+      })}
+    </div>
+  );
+}
+
 function OfficeRoom({
   title,
   subtitle,
@@ -210,8 +284,8 @@ function OfficeRoom({
                 : 'floatIdle 2.6s ease-in-out infinite',
             }}
           >
-            <div className="w-10 h-10 border-2 border-black rounded-sm bg-yellow-300 shadow-[2px_2px_0_#000] flex items-center justify-center text-[10px] font-black text-black">
-              {member.name.slice(0, 2).toUpperCase()}
+            <div className="w-10 h-10 border-2 border-black rounded-sm bg-yellow-300 shadow-[2px_2px_0_#000] flex items-center justify-center">
+              <PixelSprite id={member.id} />
             </div>
             <div className="mt-1 text-[10px] font-bold text-white bg-black/60 px-1.5 py-0.5 rounded">
               {member.name}
