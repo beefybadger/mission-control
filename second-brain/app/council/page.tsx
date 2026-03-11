@@ -38,13 +38,18 @@ const SPRITES: Record<string, string[]> = {
 };
 
 const WORK_SPOTS = [
-  { x: 180, y: 175 }, { x: 260, y: 198 }, { x: 340, y: 220 }, { x: 420, y: 243 },
+  { x: 220, y: 205 },
+  { x: 300, y: 226 },
+  { x: 380, y: 248 },
+  { x: 460, y: 270 },
 ];
 const RELAX_SPOTS = [
-  { x: 505, y: 275 }, { x: 560, y: 292 }, { x: 525, y: 325 },
+  { x: 560, y: 300 },
+  { x: 605, y: 320 },
+  { x: 575, y: 343 },
 ];
-const BARON_SPOT = { x: 490, y: 148 };
-const OFFLINE_SPOT = { x: 110, y: 310 };
+const BARON_SPOT = { x: 545, y: 142 };
+const OFFLINE_SPOT = { x: 145, y: 330 };
 
 export default function CouncilPage() {
   const [activeMember, setActiveMember] = useState<CouncilMember | null>(null);
@@ -151,42 +156,95 @@ export default function CouncilPage() {
 function OfficeIsometricScene() {
   return (
     <svg viewBox="0 0 720 470" className="absolute inset-0 w-full h-full">
-      {/* Floor */}
-      <polygon points="140,120 520,40 660,170 280,250" fill="#cfb495" stroke="#8b6b4e" strokeWidth="2" />
+      <defs>
+        <linearGradient id="floor" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#e3c8a6" />
+          <stop offset="100%" stopColor="#c9a37a" />
+        </linearGradient>
+        <linearGradient id="wallLeft" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#f3e7d9" />
+          <stop offset="100%" stopColor="#e0ccb6" />
+        </linearGradient>
+        <linearGradient id="wallRight" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#efe2d2" />
+          <stop offset="100%" stopColor="#dcc6ad" />
+        </linearGradient>
+        <linearGradient id="deskTop" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#e5ebf3" />
+          <stop offset="100%" stopColor="#cdd6e2" />
+        </linearGradient>
+        <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#c2e6ff" stopOpacity="0.75" />
+          <stop offset="100%" stopColor="#8bb6d6" stopOpacity="0.45" />
+        </linearGradient>
+      </defs>
 
-      {/* Left wall */}
-      <polygon points="140,120 280,250 280,120 140,-10" fill="#e8d9c8" stroke="#8b6b4e" strokeWidth="2" />
-      {/* Right wall */}
-      <polygon points="520,40 660,170 660,40 520,-90" fill="#e3d3c1" stroke="#8b6b4e" strokeWidth="2" />
+      {/* Floor plane */}
+      <polygon points="110,150 520,40 700,175 290,285" fill="url(#floor)" stroke="#8b6b4e" strokeWidth="2" />
 
-      {/* Baron office glass */}
-      <polygon points="430,72 530,50 585,100 485,122" fill="#9ec5e8" opacity="0.55" stroke="#5f7f99" strokeWidth="2" />
+      {/* Back + side walls */}
+      <polygon points="110,150 520,40 520,-110 110,0" fill="#f4e9dc" stroke="#8b6b4e" strokeWidth="2" />
+      <polygon points="110,150 290,285 290,120 110,0" fill="url(#wallLeft)" stroke="#8b6b4e" strokeWidth="2" />
+      <polygon points="520,40 700,175 700,10 520,-110" fill="url(#wallRight)" stroke="#8b6b4e" strokeWidth="2" />
 
-      {/* Cubicle desks */}
-      <polygon points="170,165 225,153 247,173 192,185" fill="#d9dee6" stroke="#6d7786" strokeWidth="2" />
-      <polygon points="245,187 300,175 322,195 267,207" fill="#d9dee6" stroke="#6d7786" strokeWidth="2" />
-      <polygon points="320,210 375,198 397,218 342,230" fill="#d9dee6" stroke="#6d7786" strokeWidth="2" />
-      <polygon points="395,233 450,221 472,241 417,253" fill="#d9dee6" stroke="#6d7786" strokeWidth="2" />
+      {/* Window band */}
+      <polygon points="210,70 470,5 470,-45 210,20" fill="#c9def0" opacity="0.65" />
+      <line x1="300" y1="45" x2="560" y2="-20" stroke="#b4c9db" strokeWidth="2" opacity="0.7" />
+
+      {/* Entry mat */}
+      <polygon points="140,300 220,282 250,302 170,320" fill="#1f2937" opacity="0.6" />
+      <polygon points="152,300 220,286 238,298 170,312" fill="#334155" opacity="0.75" />
+
+      {/* Baron private office (glass cube) */}
+      <polygon points="455,118 545,94 615,138 525,162" fill="#cfd8e3" stroke="#6b7280" strokeWidth="2" />
+      <polygon points="455,118 525,162 525,95 455,52" fill="url(#glass)" stroke="#5f7f99" strokeWidth="2" />
+      <polygon points="545,94 615,138 615,70 545,26" fill="url(#glass)" stroke="#5f7f99" strokeWidth="2" />
+      <polygon points="525,162 615,138 615,210 525,234" fill="url(#glass)" stroke="#5f7f99" strokeWidth="2" />
+
+      {/* Baron desk */}
+      <polygon points="500,138 545,126 570,141 525,153" fill="#9aa4b2" stroke="#4b5563" strokeWidth="2" />
+      <polygon points="500,138 525,153 525,170 500,154" fill="#6b7280" stroke="#374151" strokeWidth="2" />
+      <polygon points="525,153 570,141 570,160 525,172" fill="#7b8794" stroke="#374151" strokeWidth="2" />
+
+      {/* Cubicle cluster */}
+      <polygon points="170,185 230,170 255,186 195,201" fill="url(#deskTop)" stroke="#6d7786" strokeWidth="2" />
+      <polygon points="230,170 290,155 315,171 255,186" fill="url(#deskTop)" stroke="#6d7786" strokeWidth="2" />
+      <polygon points="290,155 350,140 375,156 315,171" fill="url(#deskTop)" stroke="#6d7786" strokeWidth="2" />
+      <polygon points="350,140 410,125 435,141 375,156" fill="url(#deskTop)" stroke="#6d7786" strokeWidth="2" />
+
+      <polygon points="195,201 255,186 255,208 195,223" fill="#b7c0cb" stroke="#6d7786" strokeWidth="2" />
+      <polygon points="255,186 315,171 315,193 255,208" fill="#aeb7c2" stroke="#6d7786" strokeWidth="2" />
+      <polygon points="315,171 375,156 375,178 315,193" fill="#b7c0cb" stroke="#6d7786" strokeWidth="2" />
+      <polygon points="375,156 435,141 435,163 375,178" fill="#aeb7c2" stroke="#6d7786" strokeWidth="2" />
 
       {/* Chairs */}
-      <polygon points="206,183 220,180 225,186 211,189" fill="#6b7280" stroke="#111827" strokeWidth="1" />
-      <polygon points="281,205 295,202 300,208 286,211" fill="#6b7280" stroke="#111827" strokeWidth="1" />
-      <polygon points="356,228 370,225 375,231 361,234" fill="#6b7280" stroke="#111827" strokeWidth="1" />
-      <polygon points="431,251 445,248 450,254 436,257" fill="#6b7280" stroke="#111827" strokeWidth="1" />
+      <polygon points="210,210 225,206 234,212 219,216" fill="#6b7280" stroke="#111827" strokeWidth="1" />
+      <polygon points="290,201 305,197 314,203 299,207" fill="#6b7280" stroke="#111827" strokeWidth="1" />
+      <polygon points="370,193 385,189 394,195 379,199" fill="#6b7280" stroke="#111827" strokeWidth="1" />
+      <polygon points="450,184 465,180 474,186 459,190" fill="#6b7280" stroke="#111827" strokeWidth="1" />
 
-      {/* Relax room */}
-      <polygon points="490,255 555,241 578,262 513,276" fill="#f8d45d" stroke="#a77c00" strokeWidth="2" />
-      <polygon points="525,289 590,275 613,296 548,310" fill="#f8d45d" stroke="#a77c00" strokeWidth="2" />
-      <polygon points="530,265 560,258 572,270 542,277" fill="#94a3b8" stroke="#475569" strokeWidth="2" />
+      {/* Lounge area */}
+      <polygon points="505,268 590,248 625,270 540,292" fill="#f6d365" stroke="#a67c00" strokeWidth="2" />
+      <polygon points="530,300 615,280 650,302 565,324" fill="#f6d365" stroke="#a67c00" strokeWidth="2" />
+      <polygon points="520,282 560,272 575,282 535,292" fill="#94a3b8" stroke="#475569" strokeWidth="2" />
+
+      {/* Sofa */}
+      <polygon points="545,265 595,253 615,266 565,278" fill="#d97706" stroke="#92400e" strokeWidth="2" />
+      <polygon points="545,265 565,278 565,298 545,285" fill="#b45309" stroke="#92400e" strokeWidth="2" />
+      <polygon points="565,278 615,266 615,286 565,298" fill="#c2410c" stroke="#92400e" strokeWidth="2" />
+
+      {/* File cabinets */}
+      <polygon points="140,170 175,162 190,172 155,180" fill="#cbd5f5" stroke="#6b7280" strokeWidth="2" />
+      <polygon points="155,180 190,172 190,200 155,208" fill="#a5b4fc" stroke="#6b7280" strokeWidth="2" />
 
       {/* Plants */}
-      <polygon points="150,115 162,112 167,118 155,121" fill="#22c55e" stroke="#166534" strokeWidth="1" />
-      <polygon points="610,150 622,147 627,153 615,156" fill="#22c55e" stroke="#166534" strokeWidth="1" />
+      <polygon points="130,140 145,136 152,143 137,147" fill="#22c55e" stroke="#166534" strokeWidth="1" />
+      <polygon points="640,175 655,171 662,178 647,182" fill="#22c55e" stroke="#166534" strokeWidth="1" />
 
       {/* Labels */}
-      <text x="170" y="98" fontSize="11" fontWeight="700" fill="#374151">Open Workspace</text>
-      <text x="495" y="88" fontSize="11" fontWeight="700" fill="#374151">Baron Office</text>
-      <text x="535" y="237" fontSize="11" fontWeight="700" fill="#374151">Relax Room</text>
+      <text x="165" y="108" fontSize="11" fontWeight="700" fill="#374151">Open Workspace</text>
+      <text x="520" y="88" fontSize="11" fontWeight="700" fill="#374151">Baron Office</text>
+      <text x="560" y="240" fontSize="11" fontWeight="700" fill="#374151">Lounge</text>
     </svg>
   );
 }
@@ -203,11 +261,14 @@ function Avatar({ member, onClick }: { member: PositionedMember; onClick: () => 
       transition={{ duration: 0.55, ease: 'easeInOut' }}
       style={{ transform: 'translate(-50%, -50%)', animation }}
     >
-      <div className="w-10 h-10 border-2 border-black rounded-sm bg-yellow-300 shadow-[2px_2px_0_#000] flex items-center justify-center">
-        <PixelSprite id={member.id} />
-      </div>
-      <div className="mt-1 text-[10px] font-bold text-white bg-black/65 px-1.5 py-0.5 rounded">
-        {member.name}
+      <div className="relative flex flex-col items-center">
+        <div className="absolute -bottom-1 w-9 h-3 rounded-full bg-black/35 blur-[2px]" />
+        <div className="w-10 h-10 border-2 border-black rounded bg-gradient-to-br from-amber-200 to-amber-400 shadow-[2px_2px_0_#000] flex items-center justify-center">
+          <PixelSprite id={member.id} />
+        </div>
+        <div className="mt-1 text-[10px] font-bold text-white bg-black/70 px-1.5 py-0.5 rounded">
+          {member.name}
+        </div>
       </div>
     </motion.button>
   );
