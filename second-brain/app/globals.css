@@ -25,20 +25,28 @@ body {
   background-size: 24px 24px;
 }
 
+.workspace-dark {
+  background: #161b24;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
 .pixel-card {
-  background: var(--pixel-dark);
-  color: #f5f5f5;
-  border: 2px solid #0b0b0b;
+  background: #222a37;
+  color: #f4f7fb;
+  border: 2px solid #334155;
   border-radius: 12px;
-  box-shadow: 4px 4px 0 #0b0b0b;
+  box-shadow: 3px 3px 0 #0f141c;
 }
 
 .pixel-card-light {
-  background: var(--pixel-light);
+  background: #f5f4ef;
   color: #111;
-  border: 2px solid #111;
+  border: 2px solid #1f2937;
   border-radius: 12px;
-  box-shadow: 4px 4px 0 #111;
+  box-shadow: 3px 3px 0 #1f2937;
 }
 
 .pixel-btn {
@@ -52,6 +60,13 @@ body {
 
 .pixel-btn:hover { transform: translate(-1px, -1px); }
 .pixel-btn:disabled { opacity: 0.6; box-shadow: none; transform: none; }
+
+/* Contrast tuning for dark workspace */
+.workspace-dark .text-slate-300 { color: #dbe3ee; }
+.workspace-dark .text-slate-400 { color: #b7c3d2; }
+.workspace-dark .text-slate-500 { color: #91a1b8; }
+.workspace-dark .text-slate-600 { color: #7f8ea4; }
+.workspace-dark .text-white { color: #f8fbff; }
 
 /* Legacy utility aliases used across existing components */
 .wire-panel {
