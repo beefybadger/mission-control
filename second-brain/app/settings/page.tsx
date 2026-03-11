@@ -32,7 +32,7 @@ export default function SettingsPage() {
       </header>
 
       {/* Connection Status */}
-      <div className="bg-[#090909] border border-white/5 rounded-2xl p-6 mb-8">
+      <div className="pixel-card p-6 mb-8">
         <div className="flex items-center gap-3 mb-4">
           <Link className="w-4 h-4 text-blue-500" />
           <h3 className="text-sm font-bold text-white">Connection Status</h3>
@@ -54,7 +54,7 @@ export default function SettingsPage() {
         {settings.map((setting, i) => {
           const Icon = setting.icon;
           return (
-            <div key={setting.label} className="bg-[#090909] border border-white/5 rounded-2xl p-6 flex items-center justify-between hover:border-white/10 transition-all">
+            <div key={setting.label} className="pixel-card p-6 flex items-center justify-between hover:border-white/10 transition-all">
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-xl bg-white/[0.03] border border-white/5 flex items-center justify-center">
                   <Icon className="w-4 h-4 text-slate-400" />
@@ -77,3 +77,4 @@ export default function SettingsPage() {
     </div>
   );
 }
+

@@ -35,7 +35,7 @@ export default function ExplorerPage() {
 
       <div className="flex gap-6 h-[500px]">
         {/* File List */}
-        <div className="w-80 flex-shrink-0 bg-[#090909] border border-white/5 rounded-2xl overflow-y-auto">
+        <div className="w-80 flex-shrink-0 pixel-card overflow-y-auto">
           {loading ? (
             <div className="p-6 text-sm text-slate-600">Loading...</div>
           ) : (
@@ -55,7 +55,7 @@ export default function ExplorerPage() {
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 bg-[#090909] border border-white/5 rounded-2xl overflow-y-auto p-6">
+        <div className="flex-1 pixel-card overflow-y-auto p-6">
           {selected ? (
             <>
               <div className="flex items-center gap-2 mb-6 pb-4 border-b border-white/5">
@@ -77,3 +77,4 @@ export default function ExplorerPage() {
     </div>
   );
 }
+

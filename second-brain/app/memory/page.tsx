@@ -46,7 +46,7 @@ export default function MemoryPage() {
         <input
           type="text"
           placeholder="Search memories..."
-          className="w-full bg-white/[0.03] border border-white/5 rounded-xl py-3 pl-12 pr-4 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500/30 transition-all"
+          className="w-full wire-soft py-3 pl-12 pr-4 text-sm text-black focus:outline-none transition-all"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -59,7 +59,7 @@ export default function MemoryPage() {
       ) : (
         <div className="space-y-4">
           {filtered.map((memory) => (
-            <div key={memory.id} className="bg-[#090909] border border-white/5 rounded-2xl p-6 hover:border-white/10 transition-all group">
+            <div key={memory.id} className="pixel-card p-6 hover:border-white/10 transition-all group">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <Brain className="w-3.5 h-3.5 text-blue-500" />
@@ -80,3 +80,5 @@ export default function MemoryPage() {
     </div>
   );
 }
+
+

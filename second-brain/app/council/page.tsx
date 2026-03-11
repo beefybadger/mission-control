@@ -131,7 +131,7 @@ function MemberCard({ member, onMessage, isLead = false }: { member: CouncilMemb
   const colors = COLOR_MAP[member.color];
   return (
     <div className={cn(
-      "bg-[#090909] border border-white/5 rounded-[2rem] overflow-hidden group transition-all duration-500 hover:border-blue-500/30 hover:bg-[#0c0c0c] flex flex-col",
+      "pixel-card rounded-[2rem] overflow-hidden group transition-all duration-500 hover:-translate-y-0.5 flex flex-col",
       isLead ? "max-w-md w-full shadow-[0_0_50px_rgba(37,99,235,0.1)]" : "w-full"
     )}>
       <div className="p-8 flex-1">

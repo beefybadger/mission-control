@@ -45,7 +45,7 @@ export default function BriefsPage() {
       ) : (
         <div className="space-y-6">
           {briefs.map((brief) => (
-            <div key={brief.id} className="bg-[#090909] border border-white/5 rounded-2xl p-6 hover:border-white/10 transition-all">
+            <div key={brief.id} className="pixel-card p-6 hover:border-white/10 transition-all">
               <div className="flex items-center gap-3 mb-4">
                 <Calendar className="w-4 h-4 text-blue-500" />
                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
@@ -62,3 +62,4 @@ export default function BriefsPage() {
     </div>
   );
 }
+

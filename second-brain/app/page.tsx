@@ -153,7 +153,7 @@ export default function MissionControlDashboard() {
           </div>
           <ul className="space-y-3">
             {actionList.map((action, idx) => (
-              <li key={idx} className="bg-white/[0.02] border border-white/5 rounded-xl px-4 py-3 text-sm text-slate-300 flex items-start gap-3">
+              <li key={idx} className="pixel-card-light px-4 py-3 text-sm text-zinc-800 flex items-start gap-3">
                 <span className="text-[10px] font-bold text-blue-400 mt-1">0{idx + 1}</span>
                 <span>{action}</span>
               </li>
@@ -209,7 +209,7 @@ export default function MissionControlDashboard() {
                 {(briefing.staleTasks.length > 0 ? briefing.staleTasks : ['None']).map((task, idx) => <li key={idx}>- {task}</li>)}
               </ul>
             </div>
-            <button onClick={saveBriefing} className="px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-sm font-semibold text-white">
+            <button onClick={saveBriefing} className="pixel-btn px-3 py-2 text-sm">
               Save Briefing Snapshot
             </button>
             {briefingNotice && <p className="text-xs text-blue-300">{briefingNotice}</p>}
@@ -246,7 +246,7 @@ export default function MissionControlDashboard() {
         ) : (
           <div className="space-y-3">
             {rankedOpportunities.slice(0, 3).map((opp: Opportunity) => (
-              <div key={opp.id} className="bg-white/[0.02] border border-white/5 rounded-xl p-4 flex items-center justify-between gap-4">
+              <div key={opp.id} className="pixel-card-light p-4 flex items-center justify-between gap-4">
                 <div>
                   <p className="text-sm font-semibold text-slate-200">{opp.title}</p>
                   <p className="text-[11px] text-slate-500">{opp.source}</p>
@@ -287,3 +287,4 @@ function ScoreAction({ label, onClick, busy }: { label: string; onClick: () => v
     </button>
   );
 }
+

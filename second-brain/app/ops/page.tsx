@@ -134,20 +134,20 @@ export default function OpsPage() {
               setTodayOnly(next);
               loadLogs(type, next);
             }}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${todayOnly ? 'bg-blue-600 text-white' : 'bg-white/[0.04] text-slate-300'}`}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold border-2 ${todayOnly ? 'bg-yellow-300 text-black border-black' : 'bg-white text-black border-black'}`}
           >
             {todayOnly ? 'Today only' : 'All dates'}
           </button>
 
-          <button onClick={exportJson} className="px-3 py-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-xs text-slate-200 flex items-center gap-1">
+          <button onClick={exportJson} className="pixel-btn px-3 py-1.5 text-xs flex items-center gap-1">
             <Download className="w-3 h-3" /> JSON
           </button>
 
-          <button onClick={exportCsv} className="px-3 py-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-xs text-slate-200 flex items-center gap-1">
+          <button onClick={exportCsv} className="pixel-btn px-3 py-1.5 text-xs flex items-center gap-1">
             <Download className="w-3 h-3" /> CSV
           </button>
 
-          <button onClick={() => loadLogs()} className="ml-auto px-3 py-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-xs text-slate-200 flex items-center gap-1">
+          <button onClick={() => loadLogs()} className="ml-auto pixel-btn px-3 py-1.5 text-xs flex items-center gap-1">
             <RefreshCw className="w-3 h-3" /> Refresh
           </button>
         </div>
@@ -161,7 +161,7 @@ export default function OpsPage() {
         ) : (
           <div className="space-y-2">
             {rows.map((row) => (
-              <div key={row.id} className="bg-white/[0.02] border border-white/5 rounded-lg p-3">
+              <div key={row.id} className="pixel-card-light p-3">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-sm text-slate-200 font-semibold">{row.action}</p>
@@ -185,8 +185,8 @@ export default function OpsPage() {
 
 function Stat({ label, value, danger = false }: { label: string; value: number; danger?: boolean }) {
   return (
-    <div className={`bg-[#0a0a0a] border rounded-2xl p-4 ${danger ? 'border-rose-500/20' : 'border-white/5'}`}>
-      <p className="text-[10px] uppercase tracking-widest text-slate-500">{label}</p>
+    <div className={`pixel-card p-4 ${danger ? 'ring-2 ring-rose-500/30' : ''}`}>
+      <p className="text-[10px] uppercase tracking-widest text-slate-400">{label}</p>
       <p className={`text-2xl font-black mt-1 ${danger ? 'text-rose-300' : 'text-white'}`}>{value}</p>
     </div>
   );
@@ -196,9 +196,10 @@ function FilterButton({ active, label, onClick }: { active: boolean; label: stri
   return (
     <button
       onClick={onClick}
-      className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${active ? 'bg-blue-600 text-white' : 'bg-white/[0.04] text-slate-300'}`}
+      className={`px-3 py-1.5 rounded-lg text-xs font-semibold border-2 ${active ? 'bg-yellow-300 text-black border-black' : 'bg-white text-black border-black'}`}
     >
       {label}
     </button>
   );
 }
+

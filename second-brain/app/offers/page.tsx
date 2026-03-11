@@ -83,7 +83,7 @@ export default function OfferSprintPage() {
       </header>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <section className="xl:col-span-2 bg-[#0a0a0a] border border-white/5 rounded-2xl p-6 space-y-5">
+        <section className="xl:col-span-2 pixel-card p-6 space-y-5">
           <div>
             <label className="text-[11px] text-slate-500 uppercase tracking-widest">Offer Template</label>
             <select
@@ -114,7 +114,7 @@ export default function OfferSprintPage() {
           <div className="flex items-center gap-3">
             <button
               onClick={saveOfferToTasks}
-              className="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-sm font-semibold text-white"
+              className="pixel-btn px-4 py-2 text-sm"
             >
               Ship to Task Force
             </button>
@@ -123,7 +123,7 @@ export default function OfferSprintPage() {
         </section>
 
         <section className="space-y-6">
-          <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-5">
+          <div className="pixel-card p-5">
             <div className="flex items-center gap-2 mb-3">
               <FileStack className="w-4 h-4 text-blue-400" />
               <h2 className="text-sm font-bold text-white uppercase tracking-widest">One-page Offer Output</h2>
@@ -131,7 +131,7 @@ export default function OfferSprintPage() {
             <OfferOutput template={template} />
           </div>
 
-          <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-5">
+          <div className="pixel-card p-5">
             <div className="flex items-center gap-2 mb-3">
               <MessageSquareQuote className="w-4 h-4 text-amber-400" />
               <h2 className="text-sm font-bold text-white uppercase tracking-widest">Memory Explorer Signals</h2>
@@ -141,13 +141,13 @@ export default function OfferSprintPage() {
             ) : (
               <ul className="space-y-2">
                 {painSignals.map((signal, idx) => (
-                  <li key={idx} className="text-sm text-slate-300 bg-white/[0.02] border border-white/5 rounded-lg p-3">{signal}</li>
+                  <li key={idx} className="text-sm text-slate-300 pixel-card-light p-3">{signal}</li>
                 ))}
               </ul>
             )}
           </div>
 
-          <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-5">
+          <div className="pixel-card p-5">
             <div className="flex items-center gap-2 mb-3">
               <Copy className="w-4 h-4 text-emerald-400" />
               <h2 className="text-sm font-bold text-white uppercase tracking-widest">Outreach Script</h2>
@@ -192,3 +192,5 @@ function OfferOutput({ template }: { template: OfferTemplate }) {
     </div>
   );
 }
+
+

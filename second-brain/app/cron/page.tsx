@@ -85,7 +85,7 @@ export default function CronPage() {
         </button>
       </header>
 
-      <section className="bg-[#090909] border border-white/5 rounded-2xl p-5 mb-6">
+      <section className="pixel-card p-5 mb-6">
         <h3 className="text-xs font-bold text-white uppercase tracking-widest mb-3">Recommended Revenue Automations</h3>
         <ul className="space-y-2 text-sm text-slate-300 mb-4">
           <li>• 08:00 — Daily Top 3 revenue actions digest</li>
@@ -132,7 +132,7 @@ export default function CronPage() {
       ) : (
         <div className="space-y-4">
           {jobs.map((job, i) => (
-            <div key={job.jobId || job.id || i} className="bg-[#090909] border border-white/5 rounded-2xl p-6 hover:border-white/10 transition-all flex items-center justify-between">
+            <div key={job.jobId || job.id || i} className="pixel-card p-6 hover:border-white/10 transition-all flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${job.enabled ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-slate-500/10 border border-white/5'}`}>
                   {job.enabled ? <Play className="w-4 h-4 text-emerald-500" /> : <Pause className="w-4 h-4 text-slate-500" />}
@@ -159,3 +159,4 @@ export default function CronPage() {
     </div>
   );
 }
+

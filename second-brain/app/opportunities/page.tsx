@@ -110,7 +110,7 @@ export default function OpportunitiesPage() {
               <Signal label="Demand proof" value={`${opp.demandProof}/5`} icon={<TrendingUp className="w-3.5 h-3.5 text-purple-400" />} />
             </div>
 
-            <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4 mb-4">
+            <div className="pixel-card-light p-4 mb-4">
               <p className="text-[11px] text-slate-500 uppercase tracking-widest mb-1">Proof Signal</p>
               <p className="text-sm text-slate-300">{opp.proofSignal}</p>
             </div>
@@ -146,12 +146,13 @@ export default function OpportunitiesPage() {
 
 function Signal({ label, value, icon }: { label: string; value: string; icon: React.ReactNode }) {
   return (
-    <div className="bg-white/[0.02] border border-white/5 rounded-lg p-3">
+    <div className="pixel-card-light p-3">
       <div className="flex items-center gap-2 mb-1">
         {icon}
         <span className="text-[10px] text-slate-500 uppercase tracking-widest">{label}</span>
       </div>
-      <p className="text-sm text-white font-semibold">{value}</p>
+      <p className="text-sm text-zinc-900 font-semibold">{value}</p>
     </div>
   );
 }
+
