@@ -38,7 +38,7 @@ export default function CronPage() {
     loadInitialJobs();
   }, []);
 
-  async function applyAction(action: 'installRevenueOps' | 'removeRevenueOps') {
+  async function applyAction(action: 'installRevenueOps' | 'removeRevenueOps' | 'runRevenueTop3Now') {
     setSaving(true);
     setNotice('');
     try {
@@ -54,8 +54,10 @@ export default function CronPage() {
       } else {
         if (action === 'installRevenueOps') {
           setNotice(`Installed: ${data.created?.length ?? 0}, skipped existing: ${data.skipped?.length ?? 0}.`);
-        } else {
+        } else if (action === 'removeRevenueOps') {
           setNotice(`Removed: ${data.removed?.length ?? 0} revenue jobs.`);
+        } else {
+          setNotice('Triggered Daily Top 3 revenue actions now.');
         }
         setJobs(Array.isArray(data.jobs) ? data.jobs : []);
       }
@@ -98,6 +100,13 @@ export default function CronPage() {
             className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 text-sm font-semibold text-white"
           >
             {saving ? 'Applying...' : 'Install Revenue Automations'}
+          </button>
+          <button
+            onClick={() => applyAction('runRevenueTop3Now')}
+            disabled={saving}
+            className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-sm font-semibold text-white"
+          >
+            Run Daily Top 3 Now
           </button>
           <button
             onClick={() => applyAction('removeRevenueOps')}

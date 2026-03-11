@@ -13,9 +13,11 @@ type LocalCronJob = {
   sessionTarget?: string;
 };
 
+const DAILY_TOP3_JOB_NAME = 'Baron OS - Daily Top 3 Revenue Actions';
+
 const REVENUE_JOBS = [
   {
-    name: 'Baron OS - Daily Top 3 Revenue Actions',
+    name: DAILY_TOP3_JOB_NAME,
     description: 'Morning reminder to execute the top 3 revenue actions.',
     cron: '0 8 * * *',
     systemEvent:
@@ -126,6 +128,25 @@ export async function POST(request: Request) {
 
       const refreshed = await listJobs();
       return NextResponse.json({ ok: true, removed, jobs: refreshed });
+    }
+
+    if (action === 'runRevenueTop3Now') {
+      const jobs = await listJobs();
+      const top3Job = jobs.find((job) => job.name === DAILY_TOP3_JOB_NAME);
+      if (!top3Job) {
+        return NextResponse.json({
+          error: 'Daily Top 3 job not found. Install revenue automations first.',
+        }, { status: 404 });
+      }
+
+      const id = top3Job.jobId ?? top3Job.id;
+      if (!id) {
+        return NextResponse.json({ error: 'Daily Top 3 job has no id.' }, { status: 400 });
+      }
+
+      await run(`openclaw cron run ${id} --json`);
+      const refreshed = await listJobs();
+      return NextResponse.json({ ok: true, ran: DAILY_TOP3_JOB_NAME, jobs: refreshed });
     }
 
     return NextResponse.json({ error: 'Unsupported action' }, { status: 400 });
