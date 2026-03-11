@@ -15,41 +15,67 @@ type LiveState = {
 
 type PositionedMember = CouncilMember & {
   live?: LiveState;
-  x: number;
-  y: number;
+  gx: number;
+  gy: number;
 };
 
+const TILE_W = 52;
+const TILE_H = 26;
+const ORIGIN_X = 360;
+const ORIGIN_Y = 78;
+
 const MEMBERS: CouncilMember[] = [
-  { id: 'baron', name: 'Baron', role: 'Lead Strategist & Architect', level: 'Tier 1', status: 'Active', description: '', capabilities: [], color: 'blue' },
-  { id: 'scotty', name: 'Scotty', role: 'Market Intelligence Scout', level: 'Tier 2', status: 'Standby', description: '', capabilities: [], color: 'emerald' },
-  { id: 'maurice', name: 'Maurice', role: 'Creative Director', level: 'Tier 2', status: 'Standby', description: '', capabilities: [], color: 'purple' },
-  { id: 'hacker', name: 'Hacker', role: 'Code Engineer', level: 'Tier 2', status: 'Standby', description: '', capabilities: [], color: 'blue' },
-  { id: 'oracle', name: 'Oracle', role: 'Data Analyst', level: 'Tier 2', status: 'Standby', description: '', capabilities: [], color: 'emerald' },
-  { id: 'sentinel', name: 'Sentinel', role: 'Ops & Monitoring', level: 'Tier 2', status: 'Standby', description: '', capabilities: [], color: 'purple' },
+  { id: 'baron', name: 'Baron', role: 'Orchestrator', level: 'Command', status: 'Active', description: '', capabilities: ['Dashboard', 'Planning'], color: 'blue' },
+  { id: 'scotty', name: 'Scotty', role: 'Research Agent', level: 'Execution', status: 'Standby', description: '', capabilities: ['Books', 'Market Notes'], color: 'purple' },
+  { id: 'hacker', name: 'Hacker', role: 'Coding Agent', level: 'Execution', status: 'Standby', description: '', capabilities: ['Terminal', 'Code'], color: 'blue' },
+  { id: 'oracle', name: 'Oracle', role: 'Data Agent', level: 'Execution', status: 'Standby', description: '', capabilities: ['Server', 'Metrics'], color: 'emerald' },
+  { id: 'maurice', name: 'Maurice', role: 'UI Agent', level: 'Execution', status: 'Standby', description: '', capabilities: ['Sketches', 'Tablet'], color: 'purple' },
+  { id: 'sentinel', name: 'Sentinel', role: 'QA Agent', level: 'Execution', status: 'Standby', description: '', capabilities: ['Checklist', 'Validation'], color: 'purple' },
 ];
 
 const SPRITES: Record<string, string[]> = {
   baron: ['..bbb.', '.bwwb.', '.bkkb.', '.byyb.', '.b..b.', '..bb..'],
-  scotty: ['..gg..', '.gwwg.', '.gkkg.', '.gyyg.', '.g..g.', '..gg..'],
-  maurice: ['..pp..', '.pwwp.', '.pkkp.', '.pyyp.', '.p..p.', '..pp..'],
+  scotty: ['..pp..', '.pwwp.', '.pkkp.', '.pyyp.', '.p..p.', '..pp..'],
   hacker: ['..cc..', '.cwwc.', '.ckkc.', '.cyyc.', '.c..c.', '..cc..'],
-  oracle: ['..te..', '.twwt.', '.tkkt.', '.tyyt.', '.t..t.', '..tt..'],
+  oracle: ['..gg..', '.gwwg.', '.gkkg.', '.gyyg.', '.g..g.', '..gg..'],
+  maurice: ['..oo..', '.owwo.', '.okko.', '.oyyo.', '.o..o.', '..oo..'],
   sentinel: ['..rr..', '.rwwr.', '.rkkr.', '.ryyr.', '.r..r.', '..rr..'],
 };
 
-const WORK_SPOTS = [
-  { x: 220, y: 205 },
-  { x: 300, y: 226 },
-  { x: 380, y: 248 },
-  { x: 460, y: 270 },
-];
+const ROLE_WORK_SPOT: Record<string, { gx: number; gy: number }> = {
+  baron: { gx: 6.4, gy: 4.7 },
+  hacker: { gx: 3.0, gy: 5.1 },
+  maurice: { gx: 4.1, gy: 6.0 },
+  scotty: { gx: 8.5, gy: 5.4 },
+  sentinel: { gx: 8.0, gy: 6.4 },
+  oracle: { gx: 10.2, gy: 3.6 },
+};
+
 const RELAX_SPOTS = [
-  { x: 560, y: 300 },
-  { x: 605, y: 320 },
-  { x: 575, y: 343 },
+  { gx: 9.4, gy: 8.4 },
+  { gx: 10.4, gy: 8.2 },
+  { gx: 9.8, gy: 9.2 },
+  { gx: 10.7, gy: 9.1 },
 ];
-const BARON_SPOT = { x: 545, y: 142 };
-const OFFLINE_SPOT = { x: 145, y: 330 };
+
+const OFFLINE_SPOT = { gx: 1.2, gy: 9.4 };
+
+const FLOW_LINKS: [string, string][] = [
+  ['baron', 'hacker'],
+  ['baron', 'maurice'],
+  ['hacker', 'sentinel'],
+  ['sentinel', 'baron'],
+  ['scotty', 'baron'],
+  ['oracle', 'hacker'],
+  ['oracle', 'baron'],
+];
+
+function iso(gx: number, gy: number) {
+  return {
+    x: ORIGIN_X + (gx - gy) * (TILE_W / 2),
+    y: ORIGIN_Y + (gx + gy) * (TILE_H / 2),
+  };
+}
 
 export default function CouncilPage() {
   const [activeMember, setActiveMember] = useState<CouncilMember | null>(null);
@@ -65,7 +91,7 @@ export default function CouncilPage() {
   }
 
   useEffect(() => {
-    async function initialLoad() {
+    async function loadInitial() {
       const res = await fetch('/api/council/status');
       const data = await res.json();
       if (res.ok) setStates((data.states ?? []) as LiveState[]);
@@ -78,7 +104,7 @@ export default function CouncilPage() {
       if (res.ok) setStates((data.states ?? []) as LiveState[]);
     }
 
-    initialLoad();
+    loadInitial();
     const timer = setInterval(poll, 20000);
     return () => clearInterval(timer);
   }, []);
@@ -86,27 +112,47 @@ export default function CouncilPage() {
   const positioned = useMemo(() => {
     const merged = MEMBERS.map((m) => ({ ...m, live: states.find((s) => s.id === m.id) }));
 
-    const baron = merged.filter((m) => m.id === 'baron').map((m) => ({ ...m, x: BARON_SPOT.x, y: BARON_SPOT.y }));
-    const workers = merged
-      .filter((m) => m.id !== 'baron' && m.live?.status === 'working')
-      .map((m, i) => ({ ...m, x: WORK_SPOTS[i % WORK_SPOTS.length].x, y: WORK_SPOTS[i % WORK_SPOTS.length].y }));
-    const idle = merged
-      .filter((m) => m.id !== 'baron' && (!m.live || m.live.status === 'idle'))
-      .map((m, i) => ({ ...m, x: RELAX_SPOTS[i % RELAX_SPOTS.length].x, y: RELAX_SPOTS[i % RELAX_SPOTS.length].y }));
-    const offline = merged
-      .filter((m) => m.id !== 'baron' && m.live?.status === 'offline')
-      .map((m) => ({ ...m, x: OFFLINE_SPOT.x, y: OFFLINE_SPOT.y }));
+    const baron = merged
+      .filter((member) => member.id === 'baron')
+      .map((member) => {
+        const s = ROLE_WORK_SPOT.baron;
+        return { ...member, gx: s.gx, gy: s.gy };
+      });
 
-    return [...baron, ...workers, ...idle, ...offline] as PositionedMember[];
+    const working = merged
+      .filter((member) => member.id !== 'baron' && (member.live?.status ?? 'idle') === 'working')
+      .map((member) => {
+        const s = ROLE_WORK_SPOT[member.id] ?? { gx: 3, gy: 5 };
+        return { ...member, gx: s.gx, gy: s.gy };
+      });
+
+    const offline = merged
+      .filter((member) => member.id !== 'baron' && member.live?.status === 'offline')
+      .map((member) => ({ ...member, gx: OFFLINE_SPOT.gx, gy: OFFLINE_SPOT.gy }));
+
+    const idle = merged
+      .filter((member) => member.id !== 'baron' && (!member.live || member.live.status === 'idle'))
+      .map((member, index) => {
+        const s = RELAX_SPOTS[index % RELAX_SPOTS.length];
+        return { ...member, gx: s.gx, gy: s.gy };
+      });
+
+    return [...baron, ...working, ...offline, ...idle] as PositionedMember[];
   }, [states]);
+
+  const byId = useMemo(() => {
+    const map = new Map<string, PositionedMember>();
+    positioned.forEach((p) => map.set(p.id, p));
+    return map;
+  }, [positioned]);
 
   return (
     <div className="max-w-7xl mx-auto p-6 md:p-8 pb-16">
       <header className="mb-6 flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-black tracking-tight text-white mb-2">Council Office Live View</h2>
+          <h2 className="text-3xl font-black tracking-tight text-white mb-2">Council Office (Stardew 2.5D)</h2>
           <p className="text-slate-400 text-sm max-w-3xl">
-            Clean isometric office style with live behavior. Working agents stay at desks, idle agents move to lounge, Baron has private office.
+            Cozy indie-dev isometric workspace with live agent movement and visual data flow.
           </p>
         </div>
         <button onClick={refreshStates} className="pixel-btn px-3 py-1.5 text-xs flex items-center gap-1">
@@ -115,8 +161,15 @@ export default function CouncilPage() {
       </header>
 
       <div className="pixel-card p-4 mb-6 overflow-x-auto">
-        <div className="relative min-w-[720px] h-[470px] wire-soft">
-          <OfficeIsometricScene />
+        <div className="relative min-w-[760px] h-[560px] wire-soft">
+          <Scene />
+
+          {FLOW_LINKS.map(([from, to]) => {
+            const a = byId.get(from);
+            const b = byId.get(to);
+            if (!a || !b) return null;
+            return <DataLink key={`${from}-${to}`} from={iso(a.gx, a.gy)} to={iso(b.gx, b.gy)} />;
+          })}
 
           {positioned.map((member) => (
             <Avatar key={member.id} member={member} onClick={() => setActiveMember(member)} />
@@ -124,7 +177,7 @@ export default function CouncilPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 mb-4">
         {positioned.map((member) => {
           const status = member.live?.status ?? 'idle';
           const tone = status === 'working' ? 'text-emerald-300' : status === 'offline' ? 'text-rose-300' : 'text-amber-200';
@@ -148,127 +201,135 @@ export default function CouncilPage() {
         })}
       </div>
 
+      <div className="pixel-card-light p-3 mb-3">
+        <p className="text-[11px] font-bold text-zinc-700 mb-1">Layout Diagram</p>
+        <pre className="text-[11px] text-zinc-700 whitespace-pre-wrap">[Back Wall: Whiteboards + Activity Screens]
+---------------------------------------------------------------
+| Bookshelf/Notes | Server Rack (Data) | Glass Panel |
+|-----------------+--------------------+------------|
+| Coding Desk     | Command Core       | Research   |
+| UI Desk         | (Orchestrator)     | QA Desk    |
+|-----------------+--------------------+------------|
+| Plants + Storage| Walkway            | Coffee Nook|
+---------------------------------------------------------------
+[Front/Entry edge with subtle data cables]</pre>
+      </div>
+
       <ChatModal member={activeMember} isOpen={!!activeMember} onClose={() => setActiveMember(null)} />
     </div>
   );
 }
 
-function OfficeIsometricScene() {
+function Scene() {
   return (
-    <svg viewBox="0 0 720 470" className="absolute inset-0 w-full h-full">
+    <svg viewBox="0 0 760 560" className="absolute inset-0 w-full h-full">
       <defs>
-        <linearGradient id="floor" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#e3c8a6" />
-          <stop offset="100%" stopColor="#c9a37a" />
-        </linearGradient>
-        <linearGradient id="wallLeft" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#f3e7d9" />
-          <stop offset="100%" stopColor="#e0ccb6" />
-        </linearGradient>
-        <linearGradient id="wallRight" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#efe2d2" />
-          <stop offset="100%" stopColor="#dcc6ad" />
-        </linearGradient>
-        <linearGradient id="deskTop" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#e5ebf3" />
-          <stop offset="100%" stopColor="#cdd6e2" />
-        </linearGradient>
-        <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#c2e6ff" stopOpacity="0.75" />
-          <stop offset="100%" stopColor="#8bb6d6" stopOpacity="0.45" />
+        <linearGradient id="woodFloor" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#C89B6D" />
+          <stop offset="100%" stopColor="#9B744D" />
         </linearGradient>
       </defs>
 
-      {/* Floor plane */}
-      <polygon points="110,150 520,40 700,175 290,285" fill="url(#floor)" stroke="#8b6b4e" strokeWidth="2" />
+      {/* Floor */}
+      <polygon points="130,165 555,52 720,185 295,298" fill="url(#woodFloor)" stroke="#7a583b" strokeWidth="2" />
 
-      {/* Back + side walls */}
-      <polygon points="110,150 520,40 520,-110 110,0" fill="#f4e9dc" stroke="#8b6b4e" strokeWidth="2" />
-      <polygon points="110,150 290,285 290,120 110,0" fill="url(#wallLeft)" stroke="#8b6b4e" strokeWidth="2" />
-      <polygon points="520,40 700,175 700,10 520,-110" fill="url(#wallRight)" stroke="#8b6b4e" strokeWidth="2" />
+      {/* Walls */}
+      <polygon points="130,165 295,298 295,118 130,-15" fill="#EADFCF" stroke="#8B6B4E" strokeWidth="2" />
+      <polygon points="555,52 720,185 720,4 555,-128" fill="#E6D7C4" stroke="#8B6B4E" strokeWidth="2" />
+      <polygon points="130,165 555,52 555,-128 130,-15" fill="#F1E7DA" stroke="#8B6B4E" strokeWidth="2" />
 
-      {/* Window band */}
-      <polygon points="210,70 470,5 470,-45 210,20" fill="#c9def0" opacity="0.65" />
-      <line x1="300" y1="45" x2="560" y2="-20" stroke="#b4c9db" strokeWidth="2" opacity="0.7" />
+      {/* Whiteboards + activity screen */}
+      <polygon points="210,52 360,13 360,-40 210,-1" fill="#f8fafc" stroke="#64748b" strokeWidth="2" />
+      <polygon points="368,11 505,-24 505,-72 368,-37" fill="#dbeafe" stroke="#64748b" strokeWidth="2" className="monitor-blink" />
 
-      {/* Entry mat */}
-      <polygon points="140,300 220,282 250,302 170,320" fill="#1f2937" opacity="0.6" />
-      <polygon points="152,300 220,286 238,298 170,312" fill="#334155" opacity="0.75" />
+      {/* Command core (center) */}
+      <polygon points="340,208 425,186 460,208 375,230" fill="#a5764b" stroke="#5b3b23" strokeWidth="2" />
+      <polygon points="375,230 460,208 460,232 375,254" fill="#8b5e3c" stroke="#5b3b23" strokeWidth="2" />
+      <polygon points="340,208 375,230 375,254 340,232" fill="#7b5235" stroke="#5b3b23" strokeWidth="2" />
+      <polygon points="360,206 390,198 405,208 375,216" fill="#6FD3FF" stroke="#1d4ed8" strokeWidth="1" className="monitor-blink" />
 
-      {/* Baron private office (glass cube) */}
-      <polygon points="455,118 545,94 615,138 525,162" fill="#cfd8e3" stroke="#6b7280" strokeWidth="2" />
-      <polygon points="455,118 525,162 525,95 455,52" fill="url(#glass)" stroke="#5f7f99" strokeWidth="2" />
-      <polygon points="545,94 615,138 615,70 545,26" fill="url(#glass)" stroke="#5f7f99" strokeWidth="2" />
-      <polygon points="525,162 615,138 615,210 525,234" fill="url(#glass)" stroke="#5f7f99" strokeWidth="2" />
+      {/* Dev cluster left */}
+      <polygon points="205,225 265,209 288,224 228,240" fill="#cfd8e3" stroke="#586476" strokeWidth="2" />
+      <polygon points="244,247 304,231 327,246 267,262" fill="#cfd8e3" stroke="#586476" strokeWidth="2" />
+      <polygon points="223,222 235,218 242,223 230,227" fill="#8CFFB5" stroke="#166534" strokeWidth="1" className="monitor-blink" />
+      <polygon points="262,244 274,240 281,245 269,249" fill="#6FD3FF" stroke="#1d4ed8" strokeWidth="1" className="monitor-blink" />
 
-      {/* Baron desk */}
-      <polygon points="500,138 545,126 570,141 525,153" fill="#9aa4b2" stroke="#4b5563" strokeWidth="2" />
-      <polygon points="500,138 525,153 525,170 500,154" fill="#6b7280" stroke="#374151" strokeWidth="2" />
-      <polygon points="525,153 570,141 570,160 525,172" fill="#7b8794" stroke="#374151" strokeWidth="2" />
+      {/* Analysis wing right */}
+      <polygon points="465,258 530,241 555,258 490,275" fill="#cfd8e3" stroke="#586476" strokeWidth="2" />
+      <polygon points="500,278 565,261 590,278 525,295" fill="#cfd8e3" stroke="#586476" strokeWidth="2" />
+      <polygon points="522,204 620,179 650,198 552,223" fill="#f8fafc" stroke="#64748b" strokeWidth="2" />
 
-      {/* Cubicle cluster */}
-      <polygon points="170,185 230,170 255,186 195,201" fill="url(#deskTop)" stroke="#6d7786" strokeWidth="2" />
-      <polygon points="230,170 290,155 315,171 255,186" fill="url(#deskTop)" stroke="#6d7786" strokeWidth="2" />
-      <polygon points="290,155 350,140 375,156 315,171" fill="url(#deskTop)" stroke="#6d7786" strokeWidth="2" />
-      <polygon points="350,140 410,125 435,141 375,156" fill="url(#deskTop)" stroke="#6d7786" strokeWidth="2" />
+      {/* Infra corner */}
+      <polygon points="560,134 603,123 620,136 577,147" fill="#64748b" stroke="#111827" strokeWidth="2" />
+      <polygon points="577,147 620,136 620,208 577,219" fill="#475569" stroke="#111827" strokeWidth="2" />
+      <polygon points="560,134 577,147 577,219 560,206" fill="#334155" stroke="#111827" strokeWidth="2" />
+      <circle cx="594" cy="152" r="2" fill="#8CFFB5" className="server-led" />
+      <circle cx="594" cy="163" r="2" fill="#6FD3FF" className="server-led" />
 
-      <polygon points="195,201 255,186 255,208 195,223" fill="#b7c0cb" stroke="#6d7786" strokeWidth="2" />
-      <polygon points="255,186 315,171 315,193 255,208" fill="#aeb7c2" stroke="#6d7786" strokeWidth="2" />
-      <polygon points="315,171 375,156 375,178 315,193" fill="#b7c0cb" stroke="#6d7786" strokeWidth="2" />
-      <polygon points="375,156 435,141 435,163 375,178" fill="#aeb7c2" stroke="#6d7786" strokeWidth="2" />
+      {/* Baron separate office (glass) */}
+      <polygon points="470,112 542,93 606,134 534,153" fill="#b7d7ef" opacity="0.55" stroke="#5f7f99" strokeWidth="2" />
+      <polygon points="470,112 534,153 534,90 470,49" fill="#b7d7ef" opacity="0.45" stroke="#5f7f99" strokeWidth="2" />
+      <polygon points="542,93 606,134 606,71 542,30" fill="#b7d7ef" opacity="0.45" stroke="#5f7f99" strokeWidth="2" />
 
-      {/* Chairs */}
-      <polygon points="210,210 225,206 234,212 219,216" fill="#6b7280" stroke="#111827" strokeWidth="1" />
-      <polygon points="290,201 305,197 314,203 299,207" fill="#6b7280" stroke="#111827" strokeWidth="1" />
-      <polygon points="370,193 385,189 394,195 379,199" fill="#6b7280" stroke="#111827" strokeWidth="1" />
-      <polygon points="450,184 465,180 474,186 459,190" fill="#6b7280" stroke="#111827" strokeWidth="1" />
+      {/* Break nook */}
+      <polygon points="520,338 610,314 642,336 552,360" fill="#facc15" stroke="#a16207" strokeWidth="2" />
+      <polygon points="535,312 565,304 576,314 546,322" fill="#A5764B" stroke="#5b3b23" strokeWidth="2" />
+      <polygon points="550,309 558,307 562,310 554,312" fill="#f8fafc" stroke="#374151" strokeWidth="1" />
+      <path d="M558 303 q3 -6 0 -12" stroke="#94a3b8" strokeWidth="2" fill="none" className="coffee-steam" />
 
-      {/* Lounge area */}
-      <polygon points="505,268 590,248 625,270 540,292" fill="#f6d365" stroke="#a67c00" strokeWidth="2" />
-      <polygon points="530,300 615,280 650,302 565,324" fill="#f6d365" stroke="#a67c00" strokeWidth="2" />
-      <polygon points="520,282 560,272 575,282 535,292" fill="#94a3b8" stroke="#475569" strokeWidth="2" />
+      {/* Plants/bookshelves */}
+      <polygon points="160,185 178,180 186,187 168,192" fill="#4F9B5C" stroke="#166534" strokeWidth="1" />
+      <polygon points="625,196 643,191 651,198 633,203" fill="#79C784" stroke="#166534" strokeWidth="1" />
+      <polygon points="145,112 190,100 205,110 160,122" fill="#A5764B" stroke="#5b3b23" strokeWidth="2" />
 
-      {/* Sofa */}
-      <polygon points="545,265 595,253 615,266 565,278" fill="#d97706" stroke="#92400e" strokeWidth="2" />
-      <polygon points="545,265 565,278 565,298 545,285" fill="#b45309" stroke="#92400e" strokeWidth="2" />
-      <polygon points="565,278 615,266 615,286 565,298" fill="#c2410c" stroke="#92400e" strokeWidth="2" />
-
-      {/* File cabinets */}
-      <polygon points="140,170 175,162 190,172 155,180" fill="#cbd5f5" stroke="#6b7280" strokeWidth="2" />
-      <polygon points="155,180 190,172 190,200 155,208" fill="#a5b4fc" stroke="#6b7280" strokeWidth="2" />
-
-      {/* Plants */}
-      <polygon points="130,140 145,136 152,143 137,147" fill="#22c55e" stroke="#166534" strokeWidth="1" />
-      <polygon points="640,175 655,171 662,178 647,182" fill="#22c55e" stroke="#166534" strokeWidth="1" />
-
-      {/* Labels */}
-      <text x="165" y="108" fontSize="11" fontWeight="700" fill="#374151">Open Workspace</text>
-      <text x="520" y="88" fontSize="11" fontWeight="700" fill="#374151">Baron Office</text>
-      <text x="560" y="240" fontSize="11" fontWeight="700" fill="#374151">Lounge</text>
+      {/* Data flow labels */}
+      <text x="338" y="194" fontSize="11" fontWeight="700" fill="#374151">Command Core</text>
+      <text x="196" y="204" fontSize="11" fontWeight="700" fill="#374151">Dev Cluster</text>
+      <text x="470" y="239" fontSize="11" fontWeight="700" fill="#374151">Analysis Wing</text>
+      <text x="561" y="121" fontSize="11" fontWeight="700" fill="#374151">Infra Corner</text>
+      <text x="526" y="298" fontSize="11" fontWeight="700" fill="#374151">Break Nook</text>
+      <text x="473" y="87" fontSize="11" fontWeight="700" fill="#374151">Baron Office</text>
     </svg>
   );
 }
 
+function DataLink({ from, to }: { from: { x: number; y: number }; to: { x: number; y: number } }) {
+  const mid = { x: (from.x + to.x) / 2, y: (from.y + to.y) / 2 };
+
+  return (
+    <>
+      <svg className="absolute inset-0 w-full h-full pointer-events-none">
+        <line x1={from.x} y1={from.y} x2={to.x} y2={to.y} stroke="#7dd3fc" strokeOpacity="0.45" strokeWidth="1" />
+      </svg>
+      <motion.div
+        className="absolute w-1.5 h-1.5 bg-cyan-300 rounded-[1px] pointer-events-none"
+        animate={{ left: [from.x, mid.x, to.x], top: [from.y, mid.y, to.y], opacity: [0, 1, 1, 0] }}
+        transition={{ duration: 2.2, repeat: Infinity, ease: 'linear' }}
+      />
+    </>
+  );
+}
+
 function Avatar({ member, onClick }: { member: PositionedMember; onClick: () => void }) {
+  const p = iso(member.gx, member.gy);
   const status = member.live?.status ?? 'idle';
-  const animation = status === 'working' ? 'floatWork 1.1s ease-in-out infinite' : status === 'idle' ? 'floatIdle 2.8s ease-in-out infinite' : undefined;
+  const statusIcon = status === 'working' ? '⌨' : status === 'offline' ? '✓' : '...';
 
   return (
     <motion.button
       onClick={onClick}
       className="absolute group"
-      animate={{ left: member.x, top: member.y }}
-      transition={{ duration: 0.55, ease: 'easeInOut' }}
-      style={{ transform: 'translate(-50%, -50%)', animation }}
+      animate={{ left: p.x, top: p.y - 18 }}
+      transition={{ duration: 0.5, ease: 'easeInOut' }}
+      style={{ transform: 'translate(-50%, -50%)', animation: status === 'working' ? 'floatWork 1.3s ease-in-out infinite' : 'floatIdle 2.6s ease-in-out infinite' }}
     >
       <div className="relative flex flex-col items-center">
-        <div className="absolute -bottom-1 w-9 h-3 rounded-full bg-black/35 blur-[2px]" />
-        <div className="w-10 h-10 border-2 border-black rounded bg-gradient-to-br from-amber-200 to-amber-400 shadow-[2px_2px_0_#000] flex items-center justify-center">
+        <div className="absolute -bottom-1 w-9 h-3 rounded-full bg-black/30 blur-[2px]" />
+        <div className="w-10 h-10 border-2 border-black rounded-sm bg-[#f5d36d] shadow-[2px_2px_0_#000] flex items-center justify-center">
           <PixelSprite id={member.id} />
         </div>
-        <div className="mt-1 text-[10px] font-bold text-white bg-black/70 px-1.5 py-0.5 rounded">
-          {member.name}
-        </div>
+        <div className="mt-1 text-[10px] font-bold text-white bg-black/65 px-1.5 py-0.5 rounded">{member.name}</div>
+        <div className="mt-1 text-[10px] font-bold text-black bg-white/90 px-1 py-0.5 rounded border border-black animate-[messagePop_2.4s_ease-in-out_infinite]">{statusIcon}</div>
       </div>
     </motion.button>
   );
@@ -280,12 +341,12 @@ function PixelSprite({ id }: { id: string }) {
   return (
     <div className="grid grid-cols-6 gap-[1px] p-[2px] bg-black">
       {rows.join('').split('').map((ch, idx) => {
-        const color = ch === 'b' ? '#3b82f6'
-          : ch === 'g' ? '#10b981'
-          : ch === 'p' ? '#a855f7'
-          : ch === 'c' ? '#06b6d4'
-          : ch === 't' ? '#14b8a6'
-          : ch === 'r' ? '#f43f5e'
+        const color = ch === 'b' ? '#4F7DF0'
+          : ch === 'g' ? '#2FBF71'
+          : ch === 'p' ? '#8A6FD1'
+          : ch === 'c' ? '#3FA7FF'
+          : ch === 'o' ? '#F29D38'
+          : ch === 'r' ? '#E05A6E'
           : ch === 'w' ? '#f8fafc'
           : ch === 'k' ? '#111827'
           : ch === 'y' ? '#facc15'
